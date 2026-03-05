@@ -434,7 +434,11 @@ class MainWindow(QMainWindow):
         self._on_generate_all_clicked()
 
     def _on_add_word_clicked(self) -> None:
-        text, ok = QInputDialog.getText(self, "Add Words", "Enter words separated by spaces:")
+        text, ok = QInputDialog.getText(
+            self,
+            "Add Words",
+            "Enter words/phrases separated by commas (e.g. abandon, take off):",
+        )
         if not ok or not text.strip():
             return
         words = parse_words_batch(text)

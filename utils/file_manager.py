@@ -6,9 +6,6 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 
-WORD_PATTERN = re.compile(r"[A-Za-z][A-Za-z'-]*")
-
-
 def ensure_project_dirs(project_root: Path) -> tuple[Path, Path, Path]:
     data_dir = project_root / "data"
     audio_dir = project_root / "audio"
@@ -75,19 +72,22 @@ def save_words(json_path: Path, words: list[dict[str, str]]) -> None:
 
 
 def parse_words_text(input_text: str) -> list[str]:
-    tokens = WORD_PATTERN.findall(input_text or "")
+    """Parse comma-separated words/phrases into unique normalized entries."""
+    raw = (input_text or "").replace("，", ",")
+    tokens = raw.split(",")
     output: list[str] = []
     seen: set[str] = set()
     for token in tokens:
-        value = token.lower()
+        value = re.sub(r"\s+", " ", token).strip().lower()
         if value not in seen:
-            output.append(value)
-            seen.add(value)
+            if value:
+                output.append(value)
+                seen.add(value)
     return output
 
 
 def parse_words_batch(input_text: str) -> list[str]:
-    """Parse multi-word input text into unique normalized words."""
+    """Parse comma-separated batch input into unique normalized words/phrases."""
     return parse_words_text(input_text)
 
 
