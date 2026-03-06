@@ -744,7 +744,7 @@ class MainWindow(QMainWindow):
         snapshot = [dict(item) for item in self.words]
 
         def task(progress: Callable[[int], None], log: Callable[[str], None]) -> dict[str, object]:
-            log("Syncing cards with Anki...")
+            log("Syncing local cards to Anki without regenerating AI/TTS...")
             self.anki_api.check_connection()
             self.anki_api.ensure_deck(self.deck_name)
             self.anki_api.ensure_model(self.model_name)
@@ -761,9 +761,8 @@ class MainWindow(QMainWindow):
             for idx, item in enumerate(snapshot, start=1):
                 word = item["word"]
                 try:
-                    metadata_provider = self.gpt_generator.ensure_metadata if self.gpt_generator is not None else None
-                    repaired = repair_word_data(item, metadata_provider=metadata_provider)
-                    repaired = self._generate_all_for_entry(repaired)
+                    # Sync should only use local data; AI/TTS generation belongs to Generate All.
+                    repaired = repair_word_data(item, metadata_provider=None)
                 except Exception as exc:
                     skipped += 1
                     errors.append(f"{word}: local prepare failed ({exc})")

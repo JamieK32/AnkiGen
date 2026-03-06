@@ -5,11 +5,12 @@ from typing import Any, Callable
 
 from openai import APIStatusError, AuthenticationError, OpenAI
 
+from services.models import DEFAULT_AI_MODEL
 from utils.file_manager import chunked, extract_json_array
 
 
 DEFAULT_BASE_URL = "https://yunwu.ai/v1"
-DEFAULT_MODEL = "gpt-5-mini"
+DEFAULT_MODEL = DEFAULT_AI_MODEL
 
 
 class GPTGenerationError(Exception):

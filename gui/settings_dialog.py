@@ -13,6 +13,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from services.models import AVAILABLE_AI_MODELS
+
 
 class SettingsDialog(QDialog):
     def __init__(self, settings: dict[str, Any], parent: QWidget | None = None) -> None:
@@ -38,7 +40,7 @@ class SettingsDialog(QDialog):
         self.base_url_edit.setPlaceholderText("https://yunwu.ai/v1")
         self.model_combo = QComboBox()
         self.model_combo.setEditable(True)
-        self.model_combo.addItems(["gpt-5-mini", "gpt-4.1-mini", "gpt-4o-mini"])
+        self.model_combo.addItems(AVAILABLE_AI_MODELS)
 
         self.anki_url_edit = QLineEdit()
         self.anki_url_edit.setPlaceholderText("http://localhost:8765")

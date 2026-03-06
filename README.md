@@ -142,6 +142,7 @@ AnkiGen/
 │  ├─ word_editor.py
 │  └─ settings_dialog.py
 ├─ services/
+│  ├─ models.py
 │  ├─ gpt_generator.py
 │  ├─ tts_generator.py
 │  └─ anki_api.py
