@@ -41,6 +41,7 @@ def load_words(json_path: Path) -> list[dict[str, str]]:
                 "translation": str(item.get("translation", "")).strip(),
                 "example": str(item.get("example", "")).strip(),
                 "analysis": str(item.get("analysis", "")).strip(),
+                "imported_at": str(item.get("imported_at", "")).strip(),
             }
         )
     return items
@@ -58,6 +59,7 @@ def repair_word_data(
         "translation": str(word_data.get("translation", "")).strip(),
         "example": str(word_data.get("example", "")).strip(),
         "analysis": str(word_data.get("analysis", "")).strip(),
+        "imported_at": str(word_data.get("imported_at", "")).strip(),
     }
     if not repaired["word"]:
         raise ValueError("Cannot repair word data: missing word.")

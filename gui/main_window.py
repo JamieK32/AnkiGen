@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable
 
-from PySide6.QtCore import QSize, QThread, QUrl, Qt, Signal
+from PySide6.QtCore import QSize, QThread, QTimer, QUrl, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QDialog,
     QHBoxLayout,
     QInputDialog,
     QLabel,
@@ -29,6 +30,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from gui.settings_dialog import SettingsDialog
 from gui.word_editor import WordEditor
 from services.anki_api import AnkiAPI
 from services.gpt_generator import DEFAULT_BASE_URL, DEFAULT_MODEL, GPTGenerator
@@ -46,6 +48,7 @@ from utils.file_manager import (
     sentence_audio_path,
     word_audio_path,
 )
+from utils.settings_manager import load_app_settings, sanitize_app_settings, save_app_settings
 
 
 class WordListDelegate(QStyledItemDelegate):
@@ -66,13 +69,25 @@ class WordListDelegate(QStyledItemDelegate):
 
         word = str(index.data(Qt.ItemDataRole.UserRole) or "")
         phonetic = str(index.data(Qt.ItemDataRole.UserRole + 1) or "")
+        imported_at = str(index.data(Qt.ItemDataRole.UserRole + 2) or "")
 
         word_font = QFont(option.font)
         word_font.setBold(True)
         word_font.setPointSize(max(10, option.font.pointSize()))
         painter.setFont(word_font)
         painter.setPen(word_color)
-        painter.drawText(rect.adjusted(10, 6, -10, -20), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, word)
+        painter.drawText(rect.adjusted(10, 6, -140, -20), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, word)
+
+        if imported_at:
+            time_font = QFont(option.font)
+            time_font.setPointSize(max(8, option.font.pointSize() - 2))
+            painter.setFont(time_font)
+            painter.setPen(phonetic_color)
+            painter.drawText(
+                rect.adjusted(10, 6, -10, -20),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                imported_at,
+            )
 
         if phonetic:
             phonetic_font = QFont(option.font)
@@ -107,24 +122,71 @@ class TaskThread(QThread):
 
 
 class MainWindow(QMainWindow):
+    @staticmethod
+    def _env_int(name: str, default: int) -> int:
+        try:
+            return int(os.getenv(name, str(default)))
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _now_timestamp() -> str:
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    @staticmethod
+    def _normalize_timestamp_display(value: str) -> str:
+        text = str(value or "").strip()
+        if not text:
+            return ""
+        return text.replace("T", " ")[:19]
+
+    def _ensure_imported_at_fields(self) -> bool:
+        if not self.words:
+            return False
+        changed = False
+        base = datetime.now().replace(microsecond=0)
+        total = len(self.words)
+        for idx, item in enumerate(self.words):
+            normalized = self._normalize_timestamp_display(str(item.get("imported_at", "")))
+            if normalized:
+                if normalized != item.get("imported_at", ""):
+                    item["imported_at"] = normalized
+                    changed = True
+                continue
+            # Backfill missing timestamps while preserving current list order.
+            item["imported_at"] = (base - timedelta(seconds=(total - idx))).strftime("%Y-%m-%d %H:%M:%S")
+            changed = True
+        return changed
+
     def __init__(self, project_root: Path) -> None:
         super().__init__()
         self.project_root = project_root
         self.data_dir, self.audio_dir, self.words_json_path = ensure_project_dirs(project_root)
+        self.settings_path = self.data_dir / "settings.json"
         self.words: list[dict[str, str]] = []
         self._workers: set[TaskThread] = set()
+        self._task_busy = False
+        self._busy_allows_browse_audio = False
+        self._pending_progress: int | None = None
+        self._pending_logs: list[str] = []
+        self._ui_flush_timer = QTimer(self)
+        self._ui_flush_timer.setInterval(80)
+        self._ui_flush_timer.timeout.connect(self._flush_worker_ui_updates)
 
-        self.api_key = os.getenv("YUNWU_API_KEY") or os.getenv("OPENAI_API_KEY")
-        self.base_url = os.getenv("OPENAI_BASE_URL", DEFAULT_BASE_URL)
-        self.model = os.getenv("OPENAI_MODEL", DEFAULT_MODEL)
-        self.anki_url = os.getenv("ANKI_CONNECT_URL", "http://localhost:8765")
-        self.deck_name = os.getenv("ANKI_DECK_NAME", "AI Vocabulary")
-        self.model_name = os.getenv("ANKI_MODEL_NAME", "AI Vocabulary Note")
-        self.voice = os.getenv("TTS_VOICE", "en-US-AriaNeural")
-
-        self.gpt_generator = GPTGenerator(api_key=self.api_key, base_url=self.base_url, model=self.model) if self.api_key else None
-        self.tts_generator = TTSGenerator(voice=self.voice)
-        self.anki_api = AnkiAPI(base_url=self.anki_url)
+        self.default_settings = {
+            "api_key": os.getenv("YUNWU_API_KEY") or os.getenv("OPENAI_API_KEY") or "",
+            "base_url": os.getenv("OPENAI_BASE_URL", DEFAULT_BASE_URL),
+            "model": os.getenv("OPENAI_MODEL", DEFAULT_MODEL),
+            "anki_url": os.getenv("ANKI_CONNECT_URL", "http://localhost:8765"),
+            "deck_name": os.getenv("ANKI_DECK_NAME", "AI Vocabulary"),
+            "model_name": os.getenv("ANKI_MODEL_NAME", "AI Vocabulary Note"),
+            "tts_voice": os.getenv("TTS_VOICE", "en-US-AriaNeural"),
+            "metadata_batch_size": self._env_int("METADATA_BATCH_SIZE", 20),
+            "tts_max_workers": self._env_int("TTS_MAX_WORKERS", 5),
+            "anki_upload_workers": self._env_int("ANKI_UPLOAD_WORKERS", 8),
+        }
+        self.settings = load_app_settings(self.settings_path, self.default_settings)
+        self._apply_runtime_settings(self.settings)
 
         self.audio_output = QAudioOutput(self)
         self.audio_player = QMediaPlayer(self)
@@ -151,10 +213,11 @@ class MainWindow(QMainWindow):
         self.add_button = QPushButton("Add Word")
         self.generate_all_button = QPushButton("Generate All")
         self.sync_button = QPushButton("Sync to Anki")
+        self.settings_button = QPushButton("Settings")
         self.generate_all_button.setObjectName("PrimaryAction")
-        for btn in (self.add_button, self.sync_button):
+        for btn in (self.add_button, self.sync_button, self.settings_button):
             btn.setObjectName("SecondaryToolbarAction")
-        for btn in (self.add_button, self.generate_all_button, self.sync_button):
+        for btn in (self.add_button, self.generate_all_button, self.sync_button, self.settings_button):
             btn.setMinimumHeight(32)
             toolbar_layout.addWidget(btn)
         toolbar_layout.addStretch(1)
@@ -266,6 +329,7 @@ class MainWindow(QMainWindow):
         self.generate_all_button.clicked.connect(self._on_generate_all_from_toolbar)
         self.delete_button.clicked.connect(self._on_delete_word_clicked)
         self.sync_button.clicked.connect(self._on_sync_to_anki_clicked)
+        self.settings_button.clicked.connect(self._on_open_settings_clicked)
 
         self.editor.save_requested.connect(self._on_save_word_clicked)
         self.editor.regenerate_audio_requested.connect(lambda _: self._on_generate_all_clicked())
@@ -275,6 +339,8 @@ class MainWindow(QMainWindow):
     def _load_words_or_show_error(self) -> None:
         try:
             self.words = load_words(self.words_json_path)
+            if self._ensure_imported_at_fields():
+                save_words(self.words_json_path, self.words)
             self._sort_words()
             self._refresh_word_list()
             self._auto_repair_on_load()
@@ -330,6 +396,7 @@ class MainWindow(QMainWindow):
         errors = result.get("errors", [])
         if isinstance(words, list) and words:
             self.words = words
+            self._ensure_imported_at_fields()
             self._sort_words()
             save_words(self.words_json_path, self.words)
             self._refresh_word_list()
@@ -342,7 +409,10 @@ class MainWindow(QMainWindow):
         self._summarize_audio_health()
 
     def _sort_words(self) -> None:
-        self.words.sort(key=lambda item: item["word"])
+        self.words.sort(
+            key=lambda item: self._normalize_timestamp_display(item.get("imported_at", "")),
+            reverse=True,
+        )
 
     def _refresh_word_list(self, select_word: str | None = None) -> None:
         query = self.search_input.text().strip().lower()
@@ -355,9 +425,11 @@ class MainWindow(QMainWindow):
                 continue
             filtered.append(item)
             phonetic = item.get("phonetic", "").strip()
+            imported_at = self._normalize_timestamp_display(item.get("imported_at", ""))
             qitem = QListWidgetItem(item["word"])
             qitem.setData(Qt.ItemDataRole.UserRole, item["word"])
             qitem.setData(Qt.ItemDataRole.UserRole + 1, phonetic)
+            qitem.setData(Qt.ItemDataRole.UserRole + 2, imported_at)
             self.word_list.addItem(qitem)
 
         self.word_count_label.setText(f"Words: {len(self.words)} (Showing: {len(filtered)})")
@@ -406,15 +478,15 @@ class MainWindow(QMainWindow):
         selected_words = self._selected_words()
         if not selected_words:
             self.editor.clear()
-            self.editor.set_actions_enabled(False)
+            self.editor.set_interaction_mode(can_edit=False, can_play_audio=False)
             self.delete_button.setEnabled(False)
             self.generate_all_button.setEnabled(False)
             return
-        self.delete_button.setEnabled(True)
 
         if len(selected_words) > 1:
             self.editor.clear()
-            self.editor.set_actions_enabled(False)
+            self.editor.set_interaction_mode(can_edit=False, can_play_audio=False)
+            self.delete_button.setEnabled(not self._task_busy)
             self.generate_all_button.setEnabled(False)
             return
 
@@ -424,7 +496,17 @@ class MainWindow(QMainWindow):
             return
         self.editor.set_word_data(item, False, False)
         self._update_audio_status(word)
-        self.editor.set_actions_enabled(True)
+        if self._task_busy:
+            self.delete_button.setEnabled(False)
+            self.generate_all_button.setEnabled(False)
+            self.editor.set_interaction_mode(
+                can_edit=False,
+                can_play_audio=self._busy_allows_browse_audio,
+            )
+            return
+
+        self.delete_button.setEnabled(True)
+        self.editor.set_interaction_mode(can_edit=True, can_play_audio=True)
         self.generate_all_button.setEnabled(True)
 
     def _on_generate_all_from_toolbar(self) -> None:
@@ -452,13 +534,13 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("All input words already exist.", 4000)
             return
         if not self.gpt_generator:
-            self._show_error("Missing API key. Set YUNWU_API_KEY or OPENAI_API_KEY in .env.")
+            self._show_error("Missing API key. Configure it in Settings or .env.")
             return
 
         def task(progress: Callable[[int], None], log: Callable[[str], None]) -> dict[str, object]:
             batch_result = self.gpt_generator.generate_words_batch(
                 to_generate,
-                batch_size=20,
+                batch_size=self.metadata_batch_size,
                 progress_callback=lambda p: progress(min(50, p // 2)),
                 log_callback=log,
             )
@@ -466,7 +548,7 @@ class MainWindow(QMainWindow):
             audio_result = self.tts_generator.generate_audio_batch(
                 generated_items,
                 self.audio_dir,
-                max_workers=5,
+                max_workers=self.tts_max_workers,
                 progress_callback=lambda p: progress(50 + min(50, p // 2)),
                 log_callback=log,
             )
@@ -499,6 +581,9 @@ class MainWindow(QMainWindow):
         if not merged:
             self.statusBar().showMessage("No new words were added.", 4000)
             return
+        for item in merged:
+            imported_at = self._normalize_timestamp_display(str(item.get("imported_at", "")))
+            item["imported_at"] = imported_at or self._now_timestamp()
         self.words.extend(merged)
         self._sort_words()
         save_words(self.words_json_path, self.words)
@@ -548,12 +633,16 @@ class MainWindow(QMainWindow):
         self._refresh_word_list()
         return len(delete_set)
 
-    def _on_save_word_clicked(self, edited_data: dict[str, str]) -> bool:
+    def _on_save_word_clicked(self, edited_data: dict[str, str], refresh_ui: bool = True) -> bool:
         current_word = self._current_selected_word()
         if not current_word:
             return False
         if not self._validate_word_data(edited_data):
             return False
+        current_item = self._find_word(current_word)
+        if current_item is not None:
+            imported_at = self._normalize_timestamp_display(str(current_item.get("imported_at", "")))
+            edited_data["imported_at"] = imported_at or self._now_timestamp()
 
         existing = self._find_word(edited_data["word"])
         if edited_data["word"] != current_word and existing is not None:
@@ -569,14 +658,15 @@ class MainWindow(QMainWindow):
             rename_word_assets(self.audio_dir, current_word, edited_data["word"])
         self._sort_words()
         save_words(self.words_json_path, self.words)
-        self._refresh_word_list(select_word=edited_data["word"])
-        self._update_audio_status(edited_data["word"])
-        self.statusBar().showMessage("Word data saved.", 3000)
+        if refresh_ui:
+            self._refresh_word_list(select_word=edited_data["word"])
+            self._update_audio_status(edited_data["word"])
+            self.statusBar().showMessage("Word data saved.", 3000)
         return True
 
     def _on_generate_all_clicked(self) -> None:
         edited_data = self.editor.get_word_data()
-        if not self._on_save_word_clicked(edited_data):
+        if not self._on_save_word_clicked(edited_data, refresh_ui=False):
             return
         word = edited_data["word"]
         target = self._find_word(word)
@@ -584,6 +674,7 @@ class MainWindow(QMainWindow):
             self._show_error(f"Word not found: {word}")
             return
         snapshot = dict(target)
+        self._update_audio_status(word)
 
         def task(progress: Callable[[int], None], log: Callable[[str], None]) -> dict[str, str]:
             log(f"Generating all for '{snapshot.get('word', '<unknown>')}'...")
@@ -596,6 +687,7 @@ class MainWindow(QMainWindow):
             status_text="Generating metadata and audio...",
             fn=task,
             on_success=lambda updated: self._finish_audio_generation(word, updated),
+            allow_browse_audio=True,
         )
 
     def _generate_all_for_entry(self, entry: dict[str, str]) -> dict[str, str]:
@@ -610,7 +702,10 @@ class MainWindow(QMainWindow):
             new_word = str(updated.get("word", old_word)).strip().lower() or old_word
             for idx, item in enumerate(self.words):
                 if item["word"] == old_word:
-                    self.words[idx] = updated
+                    merged_item = dict(updated)
+                    imported_at = self._normalize_timestamp_display(str(item.get("imported_at", "")))
+                    merged_item["imported_at"] = imported_at or self._now_timestamp()
+                    self.words[idx] = merged_item
                     break
             if old_word != new_word:
                 rename_word_assets(self.audio_dir, old_word, new_word)
@@ -761,7 +856,10 @@ class MainWindow(QMainWindow):
                 )
                 media_files_to_upload.extend([word_audio, sentence_audio])
 
-            upload_result = self.anki_api.upload_media_files_concurrently(media_files_to_upload, max_workers=8)
+            upload_result = self.anki_api.upload_media_files_concurrently(
+                media_files_to_upload,
+                max_workers=self.anki_upload_workers,
+            )
             progress(70)
             upload_failed = upload_result.get("failed", [])
             failed_media_names: set[str] = set()
@@ -834,6 +932,7 @@ class MainWindow(QMainWindow):
             status_text="Uploading to Anki...",
             fn=task,
             on_success=self._finish_sync_to_anki,
+            allow_browse_audio=True,
         )
 
     def _finish_sync_to_anki(self, result: object) -> None:
@@ -843,6 +942,7 @@ class MainWindow(QMainWindow):
         words = result.get("words")
         if isinstance(words, list) and words:
             self.words = words
+            self._ensure_imported_at_fields()
             self._sort_words()
             save_words(self.words_json_path, self.words)
             self._refresh_word_list()
@@ -876,15 +976,21 @@ class MainWindow(QMainWindow):
         status_text: str,
         fn: Callable[[Callable[[int], None], Callable[[str], None]], object],
         on_success: Callable[[object], None],
+        allow_browse_audio: bool = False,
     ) -> None:
         worker = TaskThread(fn)
         self._workers.add(worker)
-        self._set_busy(True, status_text)
+        self._pending_progress = None
+        self._pending_logs.clear()
+        self._set_busy(True, status_text, allow_browse_audio=allow_browse_audio)
         self._set_progress(0)
         self.progress_label.setText(f"{status_text} (0%)")
         self._append_log(status_text)
+        self._ui_flush_timer.start()
 
         def cleanup() -> None:
+            self._ui_flush_timer.stop()
+            self._flush_worker_ui_updates()
             self._set_busy(False, "Ready")
             self.progress_label.setText("Ready")
             self._workers.discard(worker)
@@ -904,24 +1010,112 @@ class MainWindow(QMainWindow):
 
         worker.succeeded.connect(on_ok)
         worker.failed.connect(on_fail)
-        worker.progress_changed.connect(self._set_progress)
-        worker.log_message.connect(self._append_log)
+        worker.progress_changed.connect(self._enqueue_worker_progress)
+        worker.log_message.connect(self._enqueue_worker_log)
         worker.start()
 
-    def _set_busy(self, busy: bool, status: str) -> None:
+    def _enqueue_worker_progress(self, percent: int) -> None:
+        self._pending_progress = max(0, min(100, int(percent)))
+
+    def _enqueue_worker_log(self, message: str) -> None:
+        text = str(message).strip()
+        if text:
+            self._pending_logs.append(text)
+        if len(self._pending_logs) > 2000:
+            del self._pending_logs[: len(self._pending_logs) - 2000]
+
+    def _flush_worker_ui_updates(self) -> None:
+        if self._pending_progress is not None:
+            self._set_progress(self._pending_progress)
+            self._pending_progress = None
+        if not self._pending_logs:
+            return
+        # Flush a small batch each tick to keep the main thread responsive.
+        batch = self._pending_logs[:12]
+        del self._pending_logs[:12]
+        for row in batch:
+            self._append_log(row)
+
+    def _set_busy(self, busy: bool, status: str, allow_browse_audio: bool = False) -> None:
+        self._task_busy = busy
+        self._busy_allows_browse_audio = bool(busy and allow_browse_audio)
         selected_count = len(self._selected_words())
         has_selection = selected_count > 0
         has_single_selection = selected_count == 1
+        has_editor_word = bool(self.editor.word_edit.text().strip())
         self.add_button.setEnabled(not busy)
         self.generate_all_button.setEnabled((not busy) and has_single_selection)
         self.sync_button.setEnabled(not busy)
-        self.search_input.setEnabled(not busy)
-        self.word_list.setEnabled(not busy)
+        self.settings_button.setEnabled(not busy)
         self.delete_button.setEnabled((not busy) and has_selection)
-        self.editor.set_actions_enabled((not busy) and has_single_selection)
+
+        if self._busy_allows_browse_audio:
+            # Keep browsing and playback available during long sync tasks.
+            self.search_input.setEnabled(True)
+            self.word_list.setEnabled(True)
+            self.editor.set_interaction_mode(
+                can_edit=False,
+                can_play_audio=has_single_selection or has_editor_word,
+            )
+        else:
+            self.search_input.setEnabled(not busy)
+            self.word_list.setEnabled(not busy)
+            self.editor.set_interaction_mode(
+                can_edit=(not busy) and has_single_selection,
+                can_play_audio=(not busy) and has_single_selection,
+            )
+
         self.statusBar().showMessage(status)
         if not busy:
             self.progress_label.setText("Ready")
+
+    def _apply_runtime_settings(self, settings: dict[str, object]) -> None:
+        cleaned = sanitize_app_settings(settings, self.default_settings)
+        self.settings = cleaned
+        self.api_key = str(cleaned["api_key"])
+        self.base_url = str(cleaned["base_url"])
+        self.model = str(cleaned["model"])
+        self.anki_url = str(cleaned["anki_url"])
+        self.deck_name = str(cleaned["deck_name"])
+        self.model_name = str(cleaned["model_name"])
+        self.voice = str(cleaned["tts_voice"])
+        self.metadata_batch_size = int(cleaned["metadata_batch_size"])
+        self.tts_max_workers = int(cleaned["tts_max_workers"])
+        self.anki_upload_workers = int(cleaned["anki_upload_workers"])
+
+        self.gpt_generator = (
+            GPTGenerator(api_key=self.api_key, base_url=self.base_url, model=self.model) if self.api_key else None
+        )
+        self.tts_generator = TTSGenerator(voice=self.voice, max_workers=self.tts_max_workers)
+        self.anki_api = AnkiAPI(base_url=self.anki_url)
+
+    def _current_settings_snapshot(self) -> dict[str, object]:
+        return {
+            "api_key": self.api_key,
+            "base_url": self.base_url,
+            "model": self.model,
+            "anki_url": self.anki_url,
+            "deck_name": self.deck_name,
+            "model_name": self.model_name,
+            "tts_voice": self.voice,
+            "metadata_batch_size": self.metadata_batch_size,
+            "tts_max_workers": self.tts_max_workers,
+            "anki_upload_workers": self.anki_upload_workers,
+        }
+
+    def _on_open_settings_clicked(self) -> None:
+        dialog = SettingsDialog(settings=self._current_settings_snapshot(), parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        new_settings = dialog.get_settings()
+        self._apply_runtime_settings(new_settings)
+        save_app_settings(self.settings_path, self.settings, self.default_settings)
+        self.statusBar().showMessage("Settings saved and applied.", 5000)
+        self._append_log(
+            "Settings updated. "
+            f"model={self.model}, batch={self.metadata_batch_size}, tts_workers={self.tts_max_workers}, "
+            f"anki_upload_workers={self.anki_upload_workers}"
+        )
 
     @staticmethod
     def _has_missing_metadata(item: dict[str, str]) -> bool:

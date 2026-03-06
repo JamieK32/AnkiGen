@@ -90,12 +90,13 @@ python main.py
 
 推荐工作流：
 
-1. 点击 `Add Word`，输入一个或多个单词/词组（英文逗号分隔）
+1. 点击顶部 `Settings` 配置 API 地址、API Key、模型与并发参数
+2. 点击 `Add Word`，输入一个或多个单词/词组（英文逗号分隔）
    例如：`abandon, ability, take off, in charge of`
-2. 点击 `Generate All`，自动生成词条元数据与音频
-3. 在右侧编辑器检查/微调词条内容
-4. 点击音频按钮试听单词与例句发音
-5. 点击 `Sync to Anki` 将卡片与音频同步到 Anki
+3. 点击 `Generate All`，自动生成词条元数据与音频
+4. 在右侧编辑器检查/微调词条内容
+5. 点击音频按钮试听单词与例句发音
+6. 点击 `Sync to Anki` 将卡片与音频同步到 Anki
 
 生成后的词条数据示例（`data/words.json`）：
 
@@ -138,15 +139,18 @@ AnkiGen/
 ├─ main.py
 ├─ gui/
 │  ├─ main_window.py
-│  └─ word_editor.py
+│  ├─ word_editor.py
+│  └─ settings_dialog.py
 ├─ services/
 │  ├─ gpt_generator.py
 │  ├─ tts_generator.py
 │  └─ anki_api.py
 ├─ utils/
-│  └─ file_manager.py
+│  ├─ file_manager.py
+│  └─ settings_manager.py
 ├─ data/
-│  └─ words.json
+│  ├─ words.json
+│  └─ settings.json
 ├─ audio/
 ├─ images/
 ├─ requirements.txt

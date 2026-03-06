@@ -170,12 +170,16 @@ class AnkiAPI:
         return self.retrieve_media_file(filename) is not None
 
     def upload_audio_if_needed(self, file_path: Path) -> bool:
-        """Upload media file only when not present in Anki. Returns True if uploaded."""
+        """
+        Upload media when missing or changed.
+        Returns True when uploaded/overwritten, False when unchanged.
+        """
         if not file_path.exists():
             raise AnkiConnectError(f"Missing audio file: {file_path}")
-        if self.media_file_exists(file_path.name):
-            return False
         encoded = base64.b64encode(file_path.read_bytes()).decode("ascii")
+        remote_encoded = self.retrieve_media_file(file_path.name)
+        if isinstance(remote_encoded, str) and remote_encoded == encoded:
+            return False
         self._invoke("storeMediaFile", {"filename": file_path.name, "data": encoded})
         return True
 

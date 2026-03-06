@@ -18,6 +18,9 @@ env/
 .mypy_cache/
 .ruff_cache/
 
+# Local runtime settings
+data/settings.json
+
 # OS / editor
 .DS_Store
 Thumbs.db

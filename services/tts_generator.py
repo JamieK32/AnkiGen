@@ -39,6 +39,15 @@ class TTSGenerator:
             raise TTSGenerationError(f"Failed to generate sentence audio for '{word}': {exc}") from exc
         return file_path
 
+    @staticmethod
+    def _extract_english_sentence(example: str) -> str:
+        """Use only the first non-empty line for sentence TTS."""
+        for line in str(example or "").splitlines():
+            line = line.strip()
+            if line:
+                return line
+        return ""
+
     def _generate_word_audio_sync(self, word: str, output_dir: Path) -> Path:
         return asyncio.run(self._generate_word_audio(word=word, output_dir=output_dir))
 
@@ -48,7 +57,7 @@ class TTSGenerator:
     def generate_audio(self, entry: dict[str, str], output_dir: Path) -> dict[str, Path | None]:
         """Generate word/sentence audio in parallel for a single entry."""
         word = entry["word"]
-        sentence = entry.get("example", "").strip()
+        sentence = self._extract_english_sentence(entry.get("example", ""))
         word_audio: Path | None = None
         sentence_audio: Path | None = None
 
@@ -135,8 +144,9 @@ class TTSGenerator:
     def generate_missing_for_entry(self, entry: dict[str, str], output_dir: Path) -> dict[str, Path | None]:
         """Backward compatible helper: keep existing audio and generate only missing files."""
         word = entry["word"]
+        sentence = self._extract_english_sentence(entry.get("example", ""))
         has_word, has_sentence = check_audio_exists(output_dir, word)
-        if has_word and (has_sentence or not entry.get("example", "").strip()):
+        if has_word and (has_sentence or not sentence):
             return {"word_audio": None, "sentence_audio": None}
         return self.generate_audio(entry=entry, output_dir=output_dir)
 
@@ -146,7 +156,7 @@ class TTSGenerator:
             return self.generate_audio(entry=entry, output_dir=output_dir)
         # Keep optional mode for older callers; still avoid dependency on phonetic metadata.
         word = entry["word"]
-        sentence = entry.get("example", "").strip()
+        sentence = self._extract_english_sentence(entry.get("example", ""))
         word_audio: Path | None = None
         sentence_audio: Path | None = None
         if generate_word:

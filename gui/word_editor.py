@@ -133,6 +133,21 @@ class WordEditor(QWidget):
         ):
             widget.setEnabled(enabled)
 
+    def set_interaction_mode(self, can_edit: bool, can_play_audio: bool) -> None:
+        for widget in (
+            self.word_edit,
+            self.phonetic_edit,
+            self.part_of_speech_edit,
+            self.translation_edit,
+            self.example_edit,
+            self.analysis_edit,
+            self.regenerate_audio_button,
+            self.save_button,
+        ):
+            widget.setEnabled(can_edit)
+        self.play_word_button.setEnabled(can_play_audio)
+        self.play_sentence_button.setEnabled(can_play_audio)
+
     def _emit_save(self) -> None:
         self.save_requested.emit(self.get_word_data())
 

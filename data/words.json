@@ -1,218 +1,335 @@
 [
   {
-    "word": "ability",
-    "phonetic": "/əˈbɪləti/",
+    "word": "death",
+    "phonetic": "/dɛθ/",
     "part_of_speech": "noun",
-    "translation": "能力；才能",
-    "example": "She has the ability to solve problems.",
-    "analysis": "指完成某事的技能或天赋"
+    "translation": "死亡",
+    "example": "The news of his death shocked everyone.\n他的死讯让所有人震惊。",
+    "analysis": "生命终结；指死亡事件",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "absorb",
-    "phonetic": "/əbˈzɔːrb/",
+    "word": "supreme leader",
+    "phonetic": "/suːˈpriːm ˈliːdər/",
+    "part_of_speech": "noun",
+    "translation": "最高领袖",
+    "example": "The supreme leader addressed the nation.\n最高领袖向全国发表了讲话。",
+    "analysis": "指拥有最高权威的领导人",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "succeed",
+    "phonetic": "/səkˈsiːd/",
     "part_of_speech": "verb",
-    "translation": "吸收；吸引（注意）",
-    "example": "Plants absorb water from the soil.",
-    "analysis": "吸收液体、能量或信息；也可表示吸引注意"
+    "translation": "成功；接替",
+    "example": "If she works hard, she will succeed.\n如果她努力工作，她会成功。",
+    "analysis": "表示达到目标或接替职务",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "abstract",
-    "phonetic": "/ˈæbstrækt/",
-    "part_of_speech": "adjective",
-    "translation": "抽象的；摘要",
-    "example": "Her ideas are abstract and hard to explain.",
-    "analysis": "表示不具体的、概念性的；也可作名词表示摘要"
-  },
-  {
-    "word": "airstrike",
-    "phonetic": "/ˈɛərstraɪk/",
+    "word": "monarchy",
+    "phonetic": "/ˈmɒnərki/",
     "part_of_speech": "noun",
-    "translation": "空袭",
-    "example": "The airstrike damaged several buildings in the town.",
-    "analysis": "指飞机或导弹对地面目标的打击"
+    "translation": "君主制",
+    "example": "The country transitioned from a monarchy to a republic.\n该国从君主制转变为共和国。",
+    "analysis": "由国王或女王统治的政治体制",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "announced",
-    "phonetic": "/əˈnaʊnst/",
-    "part_of_speech": "verb (past tense / past participle)",
-    "translation": "宣布（过去式/过去分词）",
-    "example": "The company announced a new policy yesterday.",
-    "analysis": "announce 的过去式/过去分词，表示公开宣布信息"
-  },
-  {
-    "word": "celebrations",
-    "phonetic": "/ˌsɛlɪˈbreɪʃənz/",
+    "word": "israeli airstrike",
+    "phonetic": "/ɪzˈreɪli ˈeəstraɪk/",
     "part_of_speech": "noun",
-    "translation": "庆祝活动",
-    "example": "Celebrations lasted late into the night after the victory.",
-    "analysis": "指为某事举行的欢庆活动"
+    "translation": "以色列空袭",
+    "example": "The report described an israeli airstrike on the border.\n报道描述了边境的一次以色列空袭。",
+    "analysis": "指由以色列发动的空中打击",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
     "word": "compound",
     "phonetic": "/ˈkɒmpaʊnd/",
     "part_of_speech": "noun",
-    "translation": "化合物；复合体",
-    "example": "They discovered a new chemical compound in the lab.",
-    "analysis": "由两种或多种成分组成的物质或结构"
+    "translation": "化合物；复合物",
+    "example": "The chemist created a new compound in the lab.\n化学家在实验室里合成了一种新化合物。",
+    "analysis": "可指化学物质或由多个部分组成的事物",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "culmination",
-    "phonetic": "/ˌkʌlmɪˈneɪʃən/",
-    "part_of_speech": "noun",
-    "translation": "顶点；高潮",
-    "example": "The festival was the culmination of months of planning.",
-    "analysis": "指发展到最终或最高点的阶段"
+    "word": "momentous",
+    "phonetic": "/məˈmɛntəs/",
+    "part_of_speech": "adjective",
+    "translation": "重大的；重要的",
+    "example": "They made a momentous decision about the company's future.\n他们就公司的未来做出了一个重大的决定。",
+    "analysis": "强调事件或决定具有重大影响",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "departure",
-    "phonetic": "/dɪˈpɑːrtʃər/",
-    "part_of_speech": "noun",
-    "translation": "离开；出发",
-    "example": "Her sudden departure surprised everyone at the office.",
-    "analysis": "指离开地点或开始离去的行为"
+    "word": "over the course of",
+    "phonetic": "/ˈoʊvər ðə kɔːrs əv/",
+    "part_of_speech": "prepositional phrase",
+    "translation": "在...过程中；在...期间",
+    "example": "Over the course of the year, he improved his skills.\n在一年的过程中，他提高了自己的技能。",
+    "analysis": "表示在一段时间内逐渐发生或改变",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "cement",
+    "phonetic": "/sɪˈmɛnt/",
+    "part_of_speech": "noun/verb",
+    "translation": "水泥；巩固",
+    "example": "They used cement to repair the broken wall.\n他们用水泥修补了破墙。",
+    "analysis": "作名词为建筑材料，作动词为巩固关系",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
     "word": "dominance",
     "phonetic": "/ˈdɒmɪnəns/",
     "part_of_speech": "noun",
-    "translation": "主导地位；支配",
-    "example": "The company's dominance in the market worried competitors.",
-    "analysis": "指在某领域的控制力或优势地位"
+    "translation": "支配；优势",
+    "example": "The team's dominance in the league lasted several seasons.\n该队在联赛中的统治地位持续了好几个赛季。",
+    "analysis": "指控制力、优势或支配地位",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "economically",
-    "phonetic": "/ˌiːkəˈnɒmɪkli/",
-    "part_of_speech": "adverb",
-    "translation": "在经济上；经济地",
-    "example": "The region is economically dependent on tourism.",
-    "analysis": "指在经济方面或与经济有关地"
+    "word": "office",
+    "phonetic": "/ˈɔːfɪs/",
+    "part_of_speech": "noun",
+    "translation": "办公室；办事处",
+    "example": "She left the office at six o'clock.\n她六点离开了办公室。",
+    "analysis": "指进行行政或专业工作的场所或机构",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "thwart",
+    "phonetic": "/θwɔːrt/",
+    "part_of_speech": "verb",
+    "translation": "阻挠；挫败",
+    "example": "She tried to thwart their escape.\n她试图阻止他们的逃跑。",
+    "analysis": "通过行动或阻力阻止某人或某事的成功",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "meaningful changes",
+    "phonetic": "/ˈmiːnɪŋfəl ˈtʃeɪndʒɪz/",
+    "part_of_speech": "noun phrase",
+    "translation": "有意义的改变",
+    "example": "The company promised meaningful changes to its policies.\n公司承诺对其政策进行有意义的改变。",
+    "analysis": "指能带来实质影响的改变",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "approach to the world",
+    "phonetic": "/əˈproʊtʃ tə ðə wɜːrld/",
+    "part_of_speech": "noun phrase",
+    "translation": "看待世界的方式",
+    "example": "Her approach to the world is optimistic and curious.\n她看待世界的方式乐观且好奇。",
+    "analysis": "指个人理解和面对世界的态度或方法",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "empower",
+    "phonetic": "/ɪmˈpaʊər/",
+    "part_of_speech": "verb",
+    "translation": "赋予权力；使有能力",
+    "example": "The program aims to empower women in rural areas.\n该项目旨在赋予农村妇女权力。",
+    "analysis": "给予能力、资源或权力使其自主行动",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "expand influence",
+    "phonetic": "/ɪkˈspænd ˈɪnfluəns/",
+    "part_of_speech": "verb phrase",
+    "translation": "扩大影响力",
+    "example": "The country seeks to expand influence through cultural exchanges.\n该国通过文化交流寻求扩大影响力。",
+    "analysis": "指在某地区或领域增加权威或影响范围",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "across the region",
+    "phonetic": "/əˈkrɒs ðə ˈriːdʒən/",
+    "part_of_speech": "prepositional phrase",
+    "translation": "在整个地区",
+    "example": "Teams were sent across the region to assess the damage.\n团队被派往整个地区评估损失。",
+    "analysis": "表示动作或情况覆盖某一地理区域",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
     "word": "elimination",
     "phonetic": "/ɪˌlɪmɪˈneɪʃən/",
     "part_of_speech": "noun",
     "translation": "消除；淘汰",
-    "example": "The elimination of waste improved efficiency.",
-    "analysis": "表示去除、清除或淘汰的过程"
+    "example": "The elimination of corruption requires strong institutions.\n消除腐败需要强有力的制度。",
+    "analysis": "指去除、清除或淘汰某事物的过程",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "empowered",
-    "phonetic": "/ɪmˈpaʊərd/",
+    "word": "elicit",
+    "phonetic": "/ɪˈlɪsɪt/",
     "part_of_speech": "verb",
-    "translation": "被赋权；授权",
-    "example": "The training empowered employees to make decisions.",
-    "analysis": "表示给予权力、能力或信心"
+    "translation": "引出；探出",
+    "example": "The teacher used questions to elicit responses from the students.\n老师用问题引出学生的回应。",
+    "analysis": "通过提问或刺激引出信息或反应",
+    "imported_at": "2026-03-06 12:52:17"
   },
   {
-    "word": "expanded",
-    "phonetic": "/ɪkˈspændɪd/",
+    "word": "celebration",
+    "phonetic": "/ˌsɛlɪˈbreɪʃən/",
+    "part_of_speech": "noun",
+    "translation": "庆祝；庆典",
+    "example": "The city held a celebration for the festival.\n城市为节日举办了庆祝活动。",
+    "analysis": "指为某事举行的庆祝活动或仪式",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "rare sense of hope",
+    "phonetic": "/reər sɛns əv hoʊp/",
+    "part_of_speech": "noun phrase",
+    "translation": "罕见的希望感",
+    "example": "After months of bad news, there was a rare sense of hope in the community.\n在几个月的坏消息之后，社区中出现了罕见的希望感。",
+    "analysis": "表示难得的希望感，常用来描述困境中出现的乐观情绪",
+    "imported_at": "2026-03-06 12:52:17"
+  },
+  {
+    "word": "internal unrest",
+    "phonetic": "/ɪnˈtɜːrnəl ʌnˈrɛst/",
+    "part_of_speech": "noun phrase",
+    "translation": "内部动荡",
+    "example": "There was internal unrest within the party.\n党内出现内部动荡。",
+    "analysis": "指组织或国家内部的社会或政治动荡",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "announce",
+    "phonetic": "/əˈnaʊns/",
     "part_of_speech": "verb",
-    "translation": "扩大的；扩展的",
-    "example": "The company expanded its operations into Asia.",
-    "analysis": "表示增大范围或规模"
+    "translation": "宣布",
+    "example": "They will announce the results tomorrow.\n他们将于明天宣布结果。",
+    "analysis": "正式对公众或特定群体宣告信息或决定",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "departure",
+    "phonetic": "/dɪˈpɑːrtʃər/",
+    "part_of_speech": "noun",
+    "translation": "离开；出发",
+    "example": "Her sudden departure surprised everyone.\n她的突然离开让所有人吃惊。",
+    "analysis": "指离开或启程，也可指辞职等离职行为",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "banner headline",
+    "phonetic": "/ˈbænər ˈhɛdlaɪn/",
+    "part_of_speech": "noun phrase",
+    "translation": "头条标题",
+    "example": "The scandal became the banner headline in every paper.\n这起丑闻成了每家报纸的头条标题。",
+    "analysis": "报纸或媒体刊登的显著大标题，通常指头条",
+    "imported_at": "2026-03-06 12:13:40"
   },
   {
     "word": "iconic",
-    "phonetic": "/aɪˈkɑːnɪk/",
+    "phonetic": "/aɪˈkɒnɪk/",
     "part_of_speech": "adjective",
     "translation": "标志性的",
-    "example": "The Eiffel Tower is an iconic landmark of Paris.",
-    "analysis": "表示具有标志性或代表性的事物"
+    "example": "The building is an iconic symbol of the city.\n这座建筑是该城市的标志性象征。",
+    "analysis": "具有象征性或广为人知的代表性特征",
+    "imported_at": "2026-03-06 12:13:40"
   },
   {
-    "word": "influence",
-    "phonetic": "/ˈɪnflʊəns/",
-    "part_of_speech": "noun",
-    "translation": "影响；势力",
-    "example": "His influence on the committee was clear.",
-    "analysis": "指对人或事产生作用或影响力"
+    "word": "evoke",
+    "phonetic": "/ɪˈvoʊk/",
+    "part_of_speech": "verb",
+    "translation": "唤起；引起",
+    "example": "The old song can evoke strong memories.\n那首老歌能唤起强烈的回忆。",
+    "analysis": "引发情感、记忆或联想",
+    "imported_at": "2026-03-06 12:13:40"
   },
   {
     "word": "magnitude",
     "phonetic": "/ˈmæɡnɪtjuːd/",
     "part_of_speech": "noun",
     "translation": "规模；重要性",
-    "example": "They underestimated the magnitude of the problem.",
-    "analysis": "表示范围、规模或重要程度"
+    "example": "They underestimated the magnitude of the problem.\n他们低估了问题的规模。",
+    "analysis": "表示事物的大小、程度或重要程度",
+    "imported_at": "2026-03-06 12:13:40"
   },
   {
-    "word": "meaningful",
-    "phonetic": "/ˈmiːnɪŋfəl/",
-    "part_of_speech": "adjective",
-    "translation": "有意义的",
-    "example": "She found the volunteer work deeply meaningful.",
-    "analysis": "表示有价值或能产生深远影响"
-  },
-  {
-    "word": "monarch",
-    "phonetic": "/ˈmɒnərk/",
+    "word": "culmination",
+    "phonetic": "/ˌkʌlmɪˈneɪʃən/",
     "part_of_speech": "noun",
-    "translation": "君主",
-    "example": "The monarch addressed the nation in a televised speech.",
-    "analysis": "指国家的君主或统治者"
-  },
-  {
-    "word": "revolution",
-    "phonetic": "/ˌrɛvəˈluːʃən/",
-    "part_of_speech": "noun",
-    "translation": "革命；大变革",
-    "example": "The French Revolution changed the course of history.",
-    "analysis": "指彻底的政治或社会变革，也可指重大技术变革"
-  },
-  {
-    "word": "strategically",
-    "phonetic": "/strəˈtiːdʒɪkli/",
-    "part_of_speech": "adverb",
-    "translation": "战略性地",
-    "example": "They placed the base strategically near the border.",
-    "analysis": "表示从战略角度或为达成目标而安排"
-  },
-  {
-    "word": "succeeded",
-    "phonetic": "/səkˈsiːdɪd/",
-    "part_of_speech": "verb (past tense)",
-    "translation": "成功（过去式）；接替",
-    "example": "She succeeded in finishing the project on time.",
-    "analysis": "succeed 的过去式，表示获得成功或接替某人"
-  },
-  {
-    "word": "thwarted",
-    "phonetic": "/θwɔːrtɪd/",
-    "part_of_speech": "verb",
-    "translation": "挫败；阻止",
-    "example": "The police thwarted the robbery before it began.",
-    "analysis": "表示阻止某计划或行动成功"
-  },
-  {
-    "word": "toppled",
-    "phonetic": "/ˈtɑːpəld/",
-    "part_of_speech": "verb",
-    "translation": "推翻；倒塌",
-    "example": "Protesters toppled the statue in the square.",
-    "analysis": "表示推倒或推翻（如政府或物体）"
+    "translation": "高潮；顶点",
+    "example": "The festival was the culmination of months of preparation.\n节日是数月准备的高潮。",
+    "analysis": "指一系列事件的发展达到最高点或最终结果",
+    "imported_at": "2026-03-06 12:13:40"
   },
   {
     "word": "unlikely",
     "phonetic": "/ʌnˈlaɪkli/",
     "part_of_speech": "adjective",
     "translation": "不太可能的",
-    "example": "It's unlikely that he will arrive on time.",
-    "analysis": "表示不太可能发生或为真的"
+    "example": "It is unlikely that it will rain today.\n今天下雨的可能性不大。",
+    "analysis": "表示发生的可能性很低",
+    "imported_at": "2026-03-06 12:13:40"
   },
   {
-    "word": "unrest",
-    "phonetic": "/ʌnˈrɛst/",
+    "word": "popular revolution",
+    "phonetic": "/ˈpɒpjʊlər ˌrɛvəˈluːʃən/",
+    "part_of_speech": "noun phrase",
+    "translation": "民众革命",
+    "example": "The popular revolution led to major political change.\n民众革命导致了重大的政治变革。",
+    "analysis": "由普通民众发起并推动的政治或社会变革",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "topple",
+    "phonetic": "/ˈtɒpəl/",
+    "part_of_speech": "verb",
+    "translation": "推翻；使倒台",
+    "example": "Protesters tried to topple the statue.\n抗议者试图推翻雕像。",
+    "analysis": "使从高处摔下或使政权、地位倒台",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "modernizing",
+    "phonetic": "/ˈmɒdənˌaɪzɪŋ/",
+    "part_of_speech": "verb (present participle)",
+    "translation": "现代化（进行中）",
+    "example": "The city is modernizing its public transport system.\n这座城市正在对公共交通系统进行现代化。",
+    "analysis": "指采用新技术或新方法使事物更现代",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "monarch",
+    "phonetic": "/ˈmɒnərk/",
     "part_of_speech": "noun",
-    "translation": "动荡；不安",
-    "example": "Unrest in the region led to protests across the city.",
-    "analysis": "指社会或政治上的不安和动荡"
+    "translation": "君主",
+    "example": "The monarch addressed the nation on television.\n君主在电视上向全国发表了讲话。",
+    "analysis": "国家的君主或最高统治者，通常为国王或女王",
+    "imported_at": "2026-03-06 12:13:40"
   },
   {
-    "word": "vital",
-    "phonetic": "/ˈvaɪtəl/",
+    "word": "strategically",
+    "phonetic": "/strəˈtiːdʒɪkli/",
+    "part_of_speech": "adverb",
+    "translation": "战略性地",
+    "example": "They positioned the base strategically near the border.\n他们将基地战略性地部署在边境附近。",
+    "analysis": "以有利于整体目标的方式或策略性地进行",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "economically vital",
+    "phonetic": "/ˌiːkəˈnɒmɪkli ˈvaɪtəl/",
+    "part_of_speech": "adjective phrase",
+    "translation": "经济上重要",
+    "example": "Tourism is economically vital for the island.\n旅游业对该岛在经济上至关重要。",
+    "analysis": "指对经济生存或发展非常重要",
+    "imported_at": "2026-03-06 12:13:40"
+  },
+  {
+    "word": "pro-western",
+    "phonetic": "/proʊ-ˈwɛstərn/",
     "part_of_speech": "adjective",
-    "translation": "至关重要的",
-    "example": "Fresh water is vital for all forms of life.",
-    "analysis": "表示极其重要、必不可少"
+    "translation": "亲西方的",
+    "example": "The new government is seen as pro-western by analysts.\n分析人士认为新政府是亲西方的。",
+    "analysis": "政治上倾向或支持西方国家和价值观",
+    "imported_at": "2026-03-06 12:13:40"
   }
 ]
