@@ -149,7 +149,19 @@ def extract_json_array(text: str) -> list[dict[str, Any]]:
     end = raw.rfind("]")
     if start == -1 or end == -1 or end <= start:
         raise ValueError("AI response does not contain a valid JSON array.")
-    parsed = json.loads(raw[start : end + 1])
+    candidate = raw[start : end + 1]
+    try:
+        parsed = json.loads(candidate)
+    except json.JSONDecodeError as exc:
+        # Some models emit literal newlines or tabs inside JSON strings.
+        # Normalize only string-internal control characters, then parse again.
+        sanitized = _escape_json_string_control_chars(candidate)
+        if sanitized == candidate:
+            raise
+        try:
+            parsed = json.loads(sanitized)
+        except json.JSONDecodeError:
+            raise exc
     if not isinstance(parsed, list):
         raise ValueError("AI response JSON is not a list.")
     output: list[dict[str, Any]] = []
@@ -159,3 +171,44 @@ def extract_json_array(text: str) -> list[dict[str, Any]]:
     if not output:
         raise ValueError("AI response JSON list is empty or invalid.")
     return output
+
+
+def _escape_json_string_control_chars(raw: str) -> str:
+    chars: list[str] = []
+    in_string = False
+    escaping = False
+
+    for ch in raw:
+        if escaping:
+            chars.append(ch)
+            escaping = False
+            continue
+
+        if ch == "\\":
+            chars.append(ch)
+            if in_string:
+                escaping = True
+            continue
+
+        if ch == '"':
+            chars.append(ch)
+            in_string = not in_string
+            continue
+
+        if in_string:
+            if ch == "\n":
+                chars.append("\\n")
+                continue
+            if ch == "\r":
+                chars.append("\\r")
+                continue
+            if ch == "\t":
+                chars.append("\\t")
+                continue
+            if ord(ch) < 32:
+                chars.append(f"\\u{ord(ch):04x}")
+                continue
+
+        chars.append(ch)
+
+    return "".join(chars)

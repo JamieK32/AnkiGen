@@ -1,5 +1,23 @@
 [
   {
+    "word": "prestigious",
+    "phonetic": "/preˈstɪdʒəs/",
+    "part_of_speech": "adjective",
+    "translation": "享有声望的；有威望的",
+    "example": "She won a prestigious award for her research.\n她因研究成果获得了一项享有声望的奖项。",
+    "analysis": "形容在社会或专业领域中地位高、受人尊敬的",
+    "imported_at": "2026-03-08 16:33:42"
+  },
+  {
+    "word": "aspiration",
+    "phonetic": "/ˌæspəˈreɪʃn/",
+    "part_of_speech": "noun",
+    "translation": "抱负；渴望",
+    "example": "She has high aspirations to become a surgeon.\n她有成为外科医生的远大抱负。",
+    "analysis": "指对成就或目标的强烈愿望",
+    "imported_at": "2026-03-08 16:30:34"
+  },
+  {
     "word": "uncertain",
     "phonetic": "/ʌnˈsɜːrtn/",
     "part_of_speech": "adjective",

@@ -118,9 +118,14 @@ class GPTGenerator:
             try:
                 batch_result = self.generate_word_data(batch_words)
             except Exception as exc:
-                errors.extend([f"{word}: batch generation failed ({exc})" for word in batch_words])
                 if log_callback is not None:
                     log_callback(f"Metadata batch failed: {exc}")
+                for word in batch_words:
+                    recovered = self._retry_single_entry(word, log_callback=log_callback)
+                    if recovered is not None:
+                        generated.append(recovered)
+                        continue
+                    errors.append(f"{word}: batch generation failed ({exc})")
                 processed += len(batch_words)
                 if progress_callback is not None:
                     progress_callback(int(processed * 100 / max(1, total)))
@@ -271,10 +276,15 @@ Entries:
         normalized_entry = re.sub(r"\s+", " ", entry or "").strip()
         if not normalized_example or not normalized_entry:
             return False
-        tokens = [re.escape(token) for token in normalized_entry.split(" ") if token]
-        if not tokens:
-            return False
-        pattern = r"\b" + r"\s+".join(tokens) + r"\b"
+        if " " in normalized_entry:
+            tokens = [re.escape(token) for token in normalized_entry.split(" ") if token]
+            if not tokens:
+                return False
+            pattern = r"\b" + r"\s+".join(tokens) + r"\b"
+            return re.search(pattern, normalized_example, flags=re.IGNORECASE) is not None
+
+        candidate_forms = GPTGenerator._entry_match_forms(normalized_entry)
+        pattern = r"\b(?:" + "|".join(re.escape(form) for form in candidate_forms) + r")\b"
         return re.search(pattern, normalized_example, flags=re.IGNORECASE) is not None
 
     @staticmethod
@@ -283,6 +293,26 @@ Entries:
         if not lines:
             return ""
         return lines[0]
+
+    @staticmethod
+    def _entry_match_forms(entry: str) -> list[str]:
+        forms = {entry}
+        if not entry:
+            return []
+
+        forms.add(f"{entry}'s")
+
+        if entry.endswith("y") and len(entry) > 1 and entry[-2] not in "aeiou":
+            stem = entry[:-1]
+            forms.update({f"{stem}ies", f"{stem}ied"})
+        elif entry.endswith("e"):
+            stem = entry[:-1]
+            forms.update({f"{entry}s", f"{entry}d", f"{stem}ing"})
+        else:
+            forms.update({f"{entry}s", f"{entry}es", f"{entry}ed", f"{entry}ing"})
+
+        forms.update({f"{entry}er", f"{entry}est", f"{entry}ly"})
+        return sorted(forms, key=len, reverse=True)
 
     def ensure_metadata(self, word_data: dict[str, str]) -> dict[str, str]:
         """Fill missing metadata fields using AI generation."""
