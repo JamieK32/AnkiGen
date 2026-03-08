@@ -19,15 +19,23 @@ class GPTGenerationError(Exception):
 
 class GPTGenerator:
     AUTO_METADATA_FIELDS = ("phonetic", "part_of_speech", "example", "analysis")
+    SINGLE_RETRY_ATTEMPTS = 3
 
     def __init__(self, api_key: str, base_url: str = DEFAULT_BASE_URL, model: str = DEFAULT_MODEL) -> None:
         self.client = OpenAI(api_key=api_key, base_url=base_url)
         self.model = model
 
     def generate_word_data(self, words: list[str]) -> list[dict[str, str]]:
+        return self._generate_word_data_with_mode(words, strict_mode=False)
+
+    def _generate_word_data_with_mode(
+        self,
+        words: list[str],
+        strict_mode: bool = False,
+    ) -> list[dict[str, str]]:
         if not words:
             return []
-        prompt = self._build_prompt(words)
+        prompt = self._build_prompt(words, strict_mode=strict_mode)
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -61,6 +69,25 @@ class GPTGenerator:
             return self._normalize_items(parsed, words)
         except Exception as exc:
             raise GPTGenerationError(f"Failed to parse GPT JSON: {exc}") from exc
+
+    def _retry_single_entry(
+        self,
+        word: str,
+        log_callback: Callable[[str], None] | None = None,
+    ) -> dict[str, str] | None:
+        for attempt in range(1, self.SINGLE_RETRY_ATTEMPTS + 1):
+            strict_mode = attempt >= 2
+            mode_label = "strict" if strict_mode else "standard"
+            try:
+                single_result = self._generate_word_data_with_mode([word], strict_mode=strict_mode)
+                if single_result:
+                    if log_callback is not None:
+                        log_callback(f"Recovered missing entry via {mode_label} retry {attempt}: {word}")
+                    return single_result[0]
+            except Exception as exc:
+                if log_callback is not None:
+                    log_callback(f"Single retry {attempt} ({mode_label}) failed for '{word}': {exc}")
+        return None
 
     def generate_words_batch(
         self,
@@ -107,17 +134,10 @@ class GPTGenerator:
             for word in batch_words:
                 item = batch_map.get(self._normalize_entry_key(word))
                 if item is None:
-                    # Fallback: retry missing entries one-by-one for better phrase coverage.
-                    try:
-                        single_result = self.generate_word_data([word])
-                        if single_result:
-                            generated.append(single_result[0])
-                            if log_callback is not None:
-                                log_callback(f"Recovered missing entry via single retry: {word}")
-                            continue
-                    except Exception as exc:
-                        if log_callback is not None:
-                            log_callback(f"Single retry failed for '{word}': {exc}")
+                    recovered = self._retry_single_entry(word, log_callback=log_callback)
+                    if recovered is not None:
+                        generated.append(recovered)
+                        continue
                     errors.append(f"{word}: missing from batch response")
                     continue
                 generated.append(item)
@@ -132,8 +152,41 @@ class GPTGenerator:
         return {"items": generated, "errors": errors, "batch_size": batch_size}
 
     @staticmethod
-    def _build_prompt(words: list[str]) -> str:
+    def _build_prompt(words: list[str], strict_mode: bool = False) -> str:
         entries = "\n".join(f'- "{word}"' for word in words)
+        if strict_mode:
+            return f"""Generate vocabulary learning data for the following English entries (single words or phrases).
+
+Return STRICT JSON ARRAY ONLY.
+
+Hard requirements:
+1) Output must be a valid JSON array only
+2) No markdown, no explanations, no headings, no code fences
+3) Return exactly one object for each input entry
+4) The "word" field must exactly match the input entry text
+5) Do not split phrases into separate words
+6) Every object must include: word, phonetic, part_of_speech, translation, example, analysis
+7) example must contain exactly two lines:
+   first line = English sentence containing the exact word or phrase
+   second line = Chinese translation of that sentence
+8) translation must be concise Chinese
+9) analysis must be short Chinese explanation
+
+Example output:
+[
+  {{
+    "word": "internal unrest",
+    "phonetic": "/ɪnˈtɜːrnəl ʌnˈrest/",
+    "part_of_speech": "noun phrase",
+    "translation": "内部动荡",
+    "example": "The country faced internal unrest after the election.\n选举后，这个国家陷入了内部动荡。",
+    "analysis": "表示国家或组织内部出现不稳定和骚乱。"
+  }}
+]
+
+Entries:
+{entries}
+"""
         return f"""Generate vocabulary learning data for the following English entries (single words or phrases).
 
 Return STRICT JSON.
@@ -143,7 +196,7 @@ Fields required:
 - phonetic (IPA transcription)
 - part_of_speech
 - translation (Chinese meaning)
-- example (format: "English sentence\\nChinese translation")
+- example (format: "English sentence\nChinese translation")
 - analysis (Chinese explanation)
 
 Rules:
@@ -163,7 +216,7 @@ Example output:
     "phonetic": "/əˈbændən/",
     "part_of_speech": "verb",
     "translation": "放弃；遗弃",
-    "example": "He decided to abandon the plan.\\n他决定放弃这个计划。",
+    "example": "He decided to abandon the plan.\n他决定放弃这个计划。",
     "analysis": "表示彻底停止或遗弃某事"
   }}
 ]
@@ -242,8 +295,10 @@ Entries:
         if not missing:
             return updated
 
-        generated_items = self.generate_word_data([word])
-        generated = generated_items[0]
+        generated = self._retry_single_entry(word)
+        if generated is None:
+            generated_items = self._generate_word_data_with_mode([word], strict_mode=True)
+            generated = generated_items[0]
         for field in missing:
             value = str(generated.get(field, "")).strip()
             if value:

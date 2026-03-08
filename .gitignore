@@ -17,6 +17,9 @@ env/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+build/
+dist/
+release/
 
 # Local runtime settings
 data/settings.json

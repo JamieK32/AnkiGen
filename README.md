@@ -84,6 +84,25 @@ TTS_VOICE=en-US-AriaNeural
 python main.py
 ```
 
+### 4.5 Windows 打包
+
+先安装打包工具：
+
+```bash
+pip install pyinstaller
+```
+
+然后在项目根目录执行：
+
+```powershell
+.\build_windows.ps1
+```
+
+执行完成后会生成：
+
+- `dist/AnkiGen/AnkiGen.exe`
+- `release/AnkiGen-windows-x64.zip`
+
 ---
 
 ## 5. 使用方法
