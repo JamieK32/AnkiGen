@@ -1,5 +1,20 @@
 # AnkiGen
 
+当前卡片模式为 **中文 → 英文固定搭配默写**：Anki 正面显示中文和英文输入框，翻面后显示拼写对比、标准英文答案、音标、词性、双语例句、解析和音频。拼写对比以保存的固定搭配为标准，不进行同义翻译评分。
+
+新版工作流程：
+
+- **Add Word**：多行输入，默认逗号分隔；可切换“每行一条”，保留内部逗号。实时预览并跳过已有搭配，勾选后导入。
+- **从文章提取**：粘贴中文、英文或双语文章，查看候选搭配及已有状态，勾选导入。文章历史保存在 `data/articles.json`，词条保存来源原文，生成时优先参考原文语境。编辑器可展开查看原文。
+- **补全当前搭配**：补缺失字段和音频，不覆盖已有内容。**音频操作**提供“仅补缺失音频”和“重新生成音频”，支持所选条目。
+- **仅重试失败项**：失败条目会保留在词库，显示原因，并按上次操作重试。状态包含待生成、缺音频、已完成、失败，运行时显示生成中。重启不会自动重试收费请求。
+- **Sync to Anki**：先显示新增、更新、删除（包含重复笔记）、跳过项，确认后才写入；执行前重新检查远端笔记列表。点击 Anki 状态按钮可检查连接。
+- 编辑有未保存标记，支持 **Ctrl+S**；切换、关闭前可保存、放弃或取消。日志支持 Ctrl+A/C、清空、折叠，错误时自动展开；生成期间显示动画，结束后隐藏进度条并显示完成数量。
+
+逗号模式中含逗号的搭配须用英文双引号包裹，例如：`"pursue safer, more nutritious and healthier food", be no longer limited to`。
+
+同步会更新已有笔记的卡片模板，并以本地词库为准新增、更新或删除目标牌组中的笔记。音频只在答案面播放。
+
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PySide6](https://img.shields.io/badge/PySide6-Qt-41CD52?logo=qt&logoColor=white)](https://doc.qt.io/qtforpython-6/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -112,7 +127,7 @@ pip install pyinstaller
 1. 点击顶部 `Settings` 配置 API 地址、API Key、模型与并发参数
 2. 点击 `Add Word`，输入一个或多个单词/词组（英文逗号分隔）
    例如：`abandon, ability, take off, in charge of`
-3. 点击 `Generate All`，自动生成词条元数据与音频
+3. 确认导入后自动生成词条和音频；已有条目可选中后点击“补全当前搭配”
 4. 在右侧编辑器检查/微调词条内容
 5. 点击音频按钮试听单词与例句发音
 6. 点击 `Sync to Anki` 将卡片与音频同步到 Anki

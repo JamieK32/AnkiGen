@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import tempfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Callable
 
 import edge_tts
+from aiohttp import ClientError
+from edge_tts.exceptions import NoAudioReceived, WebSocketError
 
 from utils.file_manager import check_audio_exists, sanitize_filename
 
@@ -15,29 +18,52 @@ class TTSGenerationError(Exception):
 
 
 class TTSGenerator:
+    RETRY_ATTEMPTS = 3
+
     def __init__(self, voice: str = "en-US-AriaNeural", max_workers: int = 5) -> None:
         self.voice = voice
         self.max_workers = max_workers
 
     async def _generate_word_audio(self, word: str, output_dir: Path) -> Path:
-        output_dir.mkdir(parents=True, exist_ok=True)
         file_path = output_dir / f"{sanitize_filename(word)}.mp3"
-        try:
-            communicate = edge_tts.Communicate(text=word, voice=self.voice)
-            await communicate.save(str(file_path))
-        except Exception as exc:
-            raise TTSGenerationError(f"Failed to generate word audio for '{word}': {exc}") from exc
-        return file_path
+        return await self._save_audio(word, file_path, f"word audio for '{word}'")
 
     async def _generate_sentence_audio(self, word: str, sentence: str, output_dir: Path) -> Path:
-        output_dir.mkdir(parents=True, exist_ok=True)
         file_path = output_dir / f"{sanitize_filename(word)}_sentence.mp3"
-        try:
-            communicate = edge_tts.Communicate(text=sentence, voice=self.voice)
-            await communicate.save(str(file_path))
-        except Exception as exc:
-            raise TTSGenerationError(f"Failed to generate sentence audio for '{word}': {exc}") from exc
-        return file_path
+        return await self._save_audio(sentence, file_path, f"sentence audio for '{word}'")
+
+    async def _save_audio(self, text: str, file_path: Path, label: str) -> Path:
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        for attempt in range(self.RETRY_ATTEMPTS):
+            # Edge TTS opens its output before connecting. Never pass it the
+            # existing MP3: a failed request would truncate that file to zero.
+            with tempfile.NamedTemporaryFile(dir=file_path.parent, suffix=".tmp", delete=False) as tmp:
+                temporary = Path(tmp.name)
+            try:
+                communicate = edge_tts.Communicate(
+                    text=text, voice=self.voice, connect_timeout=20, receive_timeout=45,
+                )
+                await asyncio.wait_for(communicate.save(str(temporary)), timeout=75)
+                if temporary.stat().st_size == 0:
+                    raise NoAudioReceived("Empty audio response")
+                temporary.replace(file_path)
+                return file_path
+            except (TimeoutError, ClientError, NoAudioReceived, WebSocketError) as exc:
+                if attempt + 1 == self.RETRY_ATTEMPTS:
+                    reason = "connection timed out" if isinstance(exc, TimeoutError) else "speech service unavailable"
+                    raise TTSGenerationError(
+                        f"Could not generate {label}: Edge TTS {reason} after {self.RETRY_ATTEMPTS} attempts. "
+                        "Please check your network and try again. Any existing audio was kept."
+                    ) from exc
+            except Exception as exc:
+                raise TTSGenerationError(
+                    f"Could not generate {label} ({type(exc).__name__}). "
+                    "Check the voice setting and audio folder permissions. Any existing audio was kept."
+                ) from exc
+            finally:
+                temporary.unlink(missing_ok=True)
+            await asyncio.sleep(2 ** attempt)
+        raise TTSGenerationError(f"Could not generate {label}.")
 
     @staticmethod
     def _extract_english_sentence(example: str) -> str:

@@ -6,18 +6,18 @@ from pathlib import Path
 from typing import Callable
 
 from PySide6.QtCore import QSize, QThread, QTimer, QUrl, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QIcon, QPainter
+from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QShortcut, QKeySequence
 from PySide6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
     QHBoxLayout,
-    QInputDialog,
     QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
+    QMenu,
     QMessageBox,
     QPlainTextEdit,
     QProgressBar,
@@ -31,6 +31,8 @@ from PySide6.QtWidgets import (
 )
 
 from gui.settings_dialog import SettingsDialog
+from gui.workflow_actions import WorkflowActions
+from services.vocabulary_workflow import entry_status, sync_ready
 from gui.word_editor import WordEditor
 from services.anki_api import AnkiAPI
 from services.gpt_generator import DEFAULT_BASE_URL, DEFAULT_MODEL, GPTGenerator
@@ -41,7 +43,6 @@ from utils.file_manager import (
     ensure_project_dirs,
     highlight_target_word,
     load_words,
-    parse_words_batch,
     repair_word_data,
     rename_word_assets,
     save_words,
@@ -52,55 +53,36 @@ from utils.settings_manager import load_app_settings, sanitize_app_settings, sav
 
 
 class WordListDelegate(QStyledItemDelegate):
-    def paint(self, painter: QPainter, option, index) -> None:
+    def paint(self, painter, option, index):
         painter.save()
-
-        is_selected = bool(option.state & QStyle.StateFlag.State_Selected)
-        is_hovered = bool(option.state & QStyle.StateFlag.State_MouseOver)
-        bg_color = QColor("#3A7FCD") if is_selected else (QColor("#1F2937") if is_hovered else QColor("#171A21"))
-        border_color = QColor("#2A2F3A")
-        word_color = QColor("#E5E7EB")
-        phonetic_color = QColor("#9CA3AF")
-
+        selected = bool(option.state & QStyle.StateFlag.State_Selected)
         rect = option.rect.adjusted(4, 2, -4, -2)
-        painter.fillRect(rect, bg_color)
-        painter.setPen(border_color)
-        painter.drawRect(rect)
-
-        word = str(index.data(Qt.ItemDataRole.UserRole) or "")
-        phonetic = str(index.data(Qt.ItemDataRole.UserRole + 1) or "")
-        imported_at = str(index.data(Qt.ItemDataRole.UserRole + 2) or "")
-
-        word_font = QFont(option.font)
-        word_font.setBold(True)
-        word_font.setPointSize(max(10, option.font.pointSize()))
-        painter.setFont(word_font)
-        painter.setPen(word_color)
-        painter.drawText(rect.adjusted(10, 6, -140, -20), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, word)
-
-        if imported_at:
-            time_font = QFont(option.font)
-            time_font.setPointSize(max(8, option.font.pointSize() - 2))
-            painter.setFont(time_font)
-            painter.setPen(phonetic_color)
-            painter.drawText(
-                rect.adjusted(10, 6, -10, -20),
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
-                imported_at,
-            )
-
-        if phonetic:
-            phonetic_font = QFont(option.font)
-            phonetic_font.setPointSize(max(9, option.font.pointSize() - 1))
-            painter.setFont(phonetic_font)
-            painter.setPen(phonetic_color)
-            painter.drawText(rect.adjusted(10, 24, -10, -4), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, phonetic)
-
+        painter.fillRect(rect, QColor("#314C68" if selected else "#171A21"))
+        painter.setClipRect(rect)
+        font = QFont(option.font)
+        font.setBold(True)
+        painter.setFont(font)
+        painter.setPen(QColor("#E5E7EB"))
+        text_rect = rect.adjusted(10, 5, -10, 0)
+        text_rect.setHeight(painter.fontMetrics().lineSpacing() * 2)
+        painter.drawText(text_rect,
+                         Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignTop,
+                         str(index.data(Qt.ItemDataRole.UserRole) or ""))
+        font.setBold(False)
+        font.setPointSize(8)
+        painter.setFont(font)
+        painter.setPen(QColor("#9CA3AF"))
+        painter.drawText(rect.adjusted(10, 54, -10, -18), Qt.AlignmentFlag.AlignLeft,
+                         str(index.data(Qt.ItemDataRole.UserRole + 1) or ""))
+        painter.drawText(rect.adjusted(10, 75, -10, 0), Qt.AlignmentFlag.AlignLeft,
+                         str(index.data(Qt.ItemDataRole.UserRole + 2) or ""))
+        status = str(index.data(Qt.ItemDataRole.UserRole + 3) or "")
+        painter.setPen(QColor("#F3A6A6" if status == "失败" else "#A5CDB2"))
+        painter.drawText(rect.adjusted(10, 75, -10, 0), Qt.AlignmentFlag.AlignRight, status)
         painter.restore()
 
-    def sizeHint(self, option, index) -> QSize:
-        phonetic = str(index.data(Qt.ItemDataRole.UserRole + 1) or "").strip()
-        return QSize(option.rect.width(), 52 if phonetic else 38)
+    def sizeHint(self, option, index):
+        return QSize(280, 100)
 
 
 class TaskThread(QThread):
@@ -121,7 +103,7 @@ class TaskThread(QThread):
             self.failed.emit(str(exc))
 
 
-class MainWindow(QMainWindow):
+class MainWindow(WorkflowActions, QMainWindow):
     @staticmethod
     def _env_int(name: str, default: int) -> int:
         try:
@@ -165,9 +147,13 @@ class MainWindow(QMainWindow):
         self.settings_path = self.data_dir / "settings.json"
         self.words: list[dict[str, str]] = []
         self._workers: set[TaskThread] = set()
+        self._editor_baseline = None
+        self._editing_word = None
+        self._generating_words = set()
         self._task_busy = False
         self._busy_allows_browse_audio = False
         self._pending_progress: int | None = None
+        self._last_progress = 0
         self._pending_logs: list[str] = []
         self._ui_flush_timer = QTimer(self)
         self._ui_flush_timer.setInterval(80)
@@ -211,13 +197,25 @@ class MainWindow(QMainWindow):
         toolbar_layout.setSpacing(8)
 
         self.add_button = QPushButton("Add Word")
-        self.generate_all_button = QPushButton("Generate All")
+        self.generate_all_button = QPushButton("补全当前搭配")
         self.sync_button = QPushButton("Sync to Anki")
         self.settings_button = QPushButton("Settings")
+        self.article_button = QPushButton("从文章提取")
+        self.retry_button = QPushButton("仅重试失败项")
+        self.audio_button = QPushButton("音频操作")
+        menu = QMenu(self.audio_button)
+        menu.addAction("仅补缺失音频", lambda: self._generate_selected('audio_missing'))
+        menu.addAction("重新生成音频", lambda: self._generate_selected('audio_all'))
+        self.audio_button.setMenu(menu)
+        self.anki_status = QPushButton("Anki：未检测")
+        self.anki_status.setToolTip("点击检测 AnkiConnect；请先启动 Anki 并安装 AnkiConnect 插件")
+        self.anki_status.clicked.connect(self._check_anki_connection)
+        self.article_button.clicked.connect(self._open_article)
+        self.retry_button.clicked.connect(self._retry_failed)
         self.generate_all_button.setObjectName("PrimaryAction")
         for btn in (self.add_button, self.sync_button, self.settings_button):
             btn.setObjectName("SecondaryToolbarAction")
-        for btn in (self.add_button, self.generate_all_button, self.sync_button, self.settings_button):
+        for btn in (self.add_button, self.article_button, self.generate_all_button, self.audio_button, self.retry_button, self.sync_button, self.anki_status, self.settings_button):
             btn.setMinimumHeight(32)
             toolbar_layout.addWidget(btn)
         toolbar_layout.addStretch(1)
@@ -242,6 +240,7 @@ class MainWindow(QMainWindow):
         self.word_list = QListWidget()
         self.word_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.word_list.setMouseTracking(True)
+        self.word_list.setMinimumWidth(330)
         self.word_list.setItemDelegate(WordListDelegate(self.word_list))
         left_layout.addWidget(self.word_list, 1)
 
@@ -274,19 +273,35 @@ class MainWindow(QMainWindow):
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
+        self.progress_bar.hide()
         self.progress_bar.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.progress_label = QLabel("Ready")
         self.progress_label.setStyleSheet("QLabel { color: #9CA3AF; font-size: 12px; font-weight: 500; }")
 
         self.log_title = QLabel("Activity Log")
         self.log_title.setStyleSheet("QLabel { color: #9CA3AF; font-weight: 600; padding-left: 2px; }")
+        self.clear_log_button = QPushButton("Clear Log")
+        self.clear_log_button.setToolTip("Clear displayed logs without interrupting the current task")
+        self.clear_log_button.clicked.connect(self._clear_log)
+        log_header = QHBoxLayout()
+        self.log_toggle = QPushButton("收起日志")
+        self.log_toggle.setCheckable(True)
+        self.log_toggle.setChecked(True)
+        self.log_toggle.toggled.connect(self._toggle_log)
+        log_header.addWidget(self.log_title)
+        log_header.addWidget(self.log_toggle)
+        log_header.addStretch(1)
+        log_header.addWidget(self.clear_log_button)
 
         self.log_widget = QPlainTextEdit()
         self.log_widget.setReadOnly(True)
         self.log_widget.setMaximumBlockCount(500)
         self.log_widget.setPlaceholderText("Runtime logs...")
         self.log_widget.setMinimumHeight(130)
-        self.log_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.log_widget.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.log_widget.setToolTip("Ctrl+A: select all logs; Ctrl+C: copy selected logs")
+        self.log_widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.log_widget.customContextMenuRequested.connect(self._show_log_context_menu)
         self.log_widget.setStyleSheet(
             "QPlainTextEdit { "
             "  background-color: #10141D; "
@@ -312,7 +327,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(splitter, 1)
         main_layout.addWidget(self.progress_label, 0)
         main_layout.addWidget(self.progress_bar, 0)
-        main_layout.addWidget(self.log_title, 0)
+        main_layout.addLayout(log_header, 0)
         main_layout.addWidget(self.log_widget, 0)
         self.setCentralWidget(central)
 
@@ -325,12 +340,17 @@ class MainWindow(QMainWindow):
 
         self.search_input.textChanged.connect(self._refresh_word_list)
         self.word_list.itemSelectionChanged.connect(self._on_word_selected)
-        self.add_button.clicked.connect(self._on_add_word_clicked)
+        self.add_button.clicked.connect(self._open_import)
         self.generate_all_button.clicked.connect(self._on_generate_all_from_toolbar)
         self.delete_button.clicked.connect(self._on_delete_word_clicked)
-        self.sync_button.clicked.connect(self._on_sync_to_anki_clicked)
+        self.sync_button.clicked.connect(self._preview_sync)
         self.settings_button.clicked.connect(self._on_open_settings_clicked)
 
+        self.save_shortcut = QShortcut(QKeySequence.StandardKey.Save, self)
+        self.save_shortcut.activated.connect(lambda: self._on_save_word_clicked(self.editor.get_word_data()) if not self._task_busy else None)
+        for field in (self.editor.word_edit, self.editor.phonetic_edit, self.editor.part_of_speech_edit,
+                      self.editor.translation_edit, self.editor.example_edit, self.editor.analysis_edit):
+            field.textChanged.connect(self._update_dirty_indicator)
         self.editor.save_requested.connect(self._on_save_word_clicked)
         self.editor.regenerate_audio_requested.connect(lambda _: self._on_generate_all_clicked())
         self.editor.play_word_audio_requested.connect(self._on_play_word_audio_clicked)
@@ -343,70 +363,12 @@ class MainWindow(QMainWindow):
                 save_words(self.words_json_path, self.words)
             self._sort_words()
             self._refresh_word_list()
-            self._auto_repair_on_load()
+            # Incomplete and failed entries stay visible for explicit completion/retry.
             self._summarize_audio_health()
         except Exception as exc:
             self._show_error(f"Failed to load words.json: {exc}")
             self.words = []
             self._refresh_word_list()
-
-    def _auto_repair_on_load(self) -> None:
-        if not self.words:
-            return
-        if not self.gpt_generator:
-            return
-        if not any(self._has_missing_metadata(item) for item in self.words):
-            return
-
-        snapshot = [dict(item) for item in self.words]
-
-        def task(progress: Callable[[int], None], log: Callable[[str], None]) -> dict[str, object]:
-            repaired_words: list[dict[str, str]] = []
-            repaired_count = 0
-            errors: list[str] = []
-            total = len(snapshot)
-            for idx, item in enumerate(snapshot, start=1):
-                if not self._has_missing_metadata(item):
-                    repaired_words.append(item)
-                    progress(int(idx * 100 / max(1, total)))
-                    continue
-                try:
-                    fixed = repair_word_data(item, metadata_provider=self.gpt_generator.ensure_metadata)
-                    repaired_words.append(fixed)
-                    repaired_count += 1
-                    log(f"Auto-repaired metadata: {fixed.get('word', '<unknown>')}")
-                except Exception as exc:
-                    repaired_words.append(item)
-                    errors.append(f"{item.get('word', '<unknown>')}: {exc}")
-                    log(f"Auto-repair failed: {item.get('word', '<unknown>')} ({exc})")
-                progress(int(idx * 100 / max(1, total)))
-            return {"words": repaired_words, "repaired_count": repaired_count, "errors": errors}
-
-        self._start_task(
-            status_text="Repairing missing metadata...",
-            fn=task,
-            on_success=self._finish_auto_repair_on_load,
-        )
-
-    def _finish_auto_repair_on_load(self, result: object) -> None:
-        if not isinstance(result, dict):
-            return
-        words = result.get("words")
-        repaired_count = int(result.get("repaired_count", 0))
-        errors = result.get("errors", [])
-        if isinstance(words, list) and words:
-            self.words = words
-            self._ensure_imported_at_fields()
-            self._sort_words()
-            save_words(self.words_json_path, self.words)
-            self._refresh_word_list()
-        if repaired_count > 0:
-            self.statusBar().showMessage(f"Auto-repaired metadata for {repaired_count} words.", 5000)
-            self._append_log(f"Auto-repaired metadata for {repaired_count} words.")
-        if isinstance(errors, list) and errors:
-            self.statusBar().showMessage("Some words failed auto-repair.", 7000)
-            self._append_log("Some words failed auto-repair.")
-        self._summarize_audio_health()
 
     def _sort_words(self) -> None:
         self.words.sort(
@@ -416,7 +378,10 @@ class MainWindow(QMainWindow):
 
     def _refresh_word_list(self, select_word: str | None = None) -> None:
         query = self.search_input.text().strip().lower()
+        if not self._confirm_unsaved():
+            return
         current_word = select_word or self._current_selected_word()
+        self.word_list.blockSignals(True)
         self.word_list.clear()
 
         filtered = []
@@ -430,11 +395,17 @@ class MainWindow(QMainWindow):
             qitem.setData(Qt.ItemDataRole.UserRole, item["word"])
             qitem.setData(Qt.ItemDataRole.UserRole + 1, phonetic)
             qitem.setData(Qt.ItemDataRole.UserRole + 2, imported_at)
+            status = '生成中' if item['word'] in self._generating_words else entry_status(item, self.audio_dir)
+            qitem.setData(Qt.ItemDataRole.UserRole + 3, status)
+            qitem.setToolTip(item['word'] + '\n' + item.get('translation', '') + '\n' + status + '\n' + item.get('generation_error', ''))
             self.word_list.addItem(qitem)
 
         self.word_count_label.setText(f"Words: {len(self.words)} (Showing: {len(filtered)})")
 
         if self.word_list.count() == 0:
+            self.word_list.blockSignals(False)
+            self._editor_baseline = None
+            self._editing_word = None
             self.editor.clear()
             self.editor.set_actions_enabled(False)
             self.delete_button.setEnabled(False)
@@ -447,6 +418,10 @@ class MainWindow(QMainWindow):
             if item.data(Qt.ItemDataRole.UserRole) == target:
                 self.word_list.setCurrentRow(i)
                 break
+        if self.word_list.currentRow() < 0:
+            self.word_list.setCurrentRow(0)
+        self.word_list.blockSignals(False)
+        self._on_word_selected()
 
     def _current_selected_word(self) -> str | None:
         item = self.word_list.currentItem()
@@ -475,6 +450,17 @@ class MainWindow(QMainWindow):
         return None
 
     def _on_word_selected(self) -> None:
+        if not self._confirm_unsaved():
+            self.word_list.blockSignals(True)
+            self.word_list.clearSelection()
+            for i in range(self.word_list.count()):
+                if self.word_list.item(i).data(Qt.ItemDataRole.UserRole) == self._editing_word:
+                    self.word_list.setCurrentRow(i)
+                    break
+            self.word_list.blockSignals(False)
+            return
+        self._editor_baseline = None
+        self._editing_word = None
         selected_words = self._selected_words()
         if not selected_words:
             self.editor.clear()
@@ -495,6 +481,9 @@ class MainWindow(QMainWindow):
         if not item:
             return
         self.editor.set_word_data(item, False, False)
+        self._editing_word = word
+        self._editor_baseline = self.editor.get_word_data()
+        self._update_dirty_indicator()
         self._update_audio_status(word)
         if self._task_busy:
             self.delete_button.setEnabled(False)
@@ -515,88 +504,9 @@ class MainWindow(QMainWindow):
             return
         self._on_generate_all_clicked()
 
-    def _on_add_word_clicked(self) -> None:
-        text, ok = QInputDialog.getText(
-            self,
-            "Add Words",
-            "Enter words/phrases separated by commas (e.g. abandon, take off):",
-        )
-        if not ok or not text.strip():
-            return
-        words = parse_words_batch(text)
-        if not words:
-            self._show_error("No valid words found.")
-            return
-
-        existing = {item["word"] for item in self.words}
-        to_generate = [word for word in words if word not in existing]
-        if not to_generate:
-            self.statusBar().showMessage("All input words already exist.", 4000)
-            return
-        if not self.gpt_generator:
-            self._show_error("Missing API key. Configure it in Settings or .env.")
-            return
-
-        def task(progress: Callable[[int], None], log: Callable[[str], None]) -> dict[str, object]:
-            batch_result = self.gpt_generator.generate_words_batch(
-                to_generate,
-                batch_size=self.metadata_batch_size,
-                progress_callback=lambda p: progress(min(50, p // 2)),
-                log_callback=log,
-            )
-            generated_items = batch_result["items"] if isinstance(batch_result.get("items"), list) else []
-            audio_result = self.tts_generator.generate_audio_batch(
-                generated_items,
-                self.audio_dir,
-                max_workers=self.tts_max_workers,
-                progress_callback=lambda p: progress(50 + min(50, p // 2)),
-                log_callback=log,
-            )
-            audio_errors = audio_result.get("errors", []) if isinstance(audio_result.get("errors"), list) else []
-            progress(100)
-            return {
-                "items": generated_items,
-                "errors": list(batch_result.get("errors", [])) + audio_errors,
-            }
-
-        self._start_task(
-            status_text="Generating vocabulary and audio...",
-            fn=task,
-            on_success=self._finish_add_words,
-        )
-
-    def _finish_add_words(self, new_items: object) -> None:
-        items: list[dict[str, str]] = []
-        errors: list[str] = []
-        if isinstance(new_items, dict):
-            items = new_items.get("items", []) if isinstance(new_items.get("items"), list) else []
-            errors = new_items.get("errors", []) if isinstance(new_items.get("errors"), list) else []
-        elif isinstance(new_items, list):
-            items = new_items
-        if not items:
-            self._show_error("No word data generated.")
-            return
-        known = {item["word"] for item in self.words}
-        merged = [item for item in items if item.get("word") not in known]
-        if not merged:
-            self.statusBar().showMessage("No new words were added.", 4000)
-            return
-        for item in merged:
-            imported_at = self._normalize_timestamp_display(str(item.get("imported_at", "")))
-            item["imported_at"] = imported_at or self._now_timestamp()
-        self.words.extend(merged)
-        self._sort_words()
-        save_words(self.words_json_path, self.words)
-        self._refresh_word_list(select_word=merged[0]["word"])
-        self._append_log(f"Added {len(merged)} words.")
-        if errors:
-            self.statusBar().showMessage(f"Added {len(merged)} words, {len(errors)} failed.", 7000)
-            QMessageBox.warning(self, "Batch Generation Completed", "\n".join(errors[:10]))
-            self._append_log(f"Batch generation finished with {len(errors)} errors.")
-            return
-        self.statusBar().showMessage(f"Added {len(merged)} words.", 5000)
-
     def _on_delete_word_clicked(self) -> None:
+        if not self._confirm_unsaved():
+            return
         selected_words = self._selected_words()
         if not selected_words:
             return
@@ -626,6 +536,7 @@ class MainWindow(QMainWindow):
         delete_set = requested & existing
         if not delete_set:
             return 0
+        self._editor_baseline = None
         self.words = [item for item in self.words if item["word"] not in delete_set]
         save_words(self.words_json_path, self.words)
         for word in delete_set:
@@ -634,13 +545,15 @@ class MainWindow(QMainWindow):
         return len(delete_set)
 
     def _on_save_word_clicked(self, edited_data: dict[str, str], refresh_ui: bool = True) -> bool:
-        current_word = self._current_selected_word()
+        current_word = self._editing_word
         if not current_word:
             return False
         if not self._validate_word_data(edited_data):
             return False
         current_item = self._find_word(current_word)
         if current_item is not None:
+            for field in ('source_text', 'generation_error', 'generation_mode'):
+                edited_data[field] = current_item.get(field, '')
             imported_at = self._normalize_timestamp_display(str(current_item.get("imported_at", "")))
             edited_data["imported_at"] = imported_at or self._now_timestamp()
 
@@ -656,6 +569,13 @@ class MainWindow(QMainWindow):
 
         if edited_data["word"] != current_word:
             rename_word_assets(self.audio_dir, current_word, edited_data["word"])
+            for row in range(self.word_list.count()):
+                listed = self.word_list.item(row)
+                if listed.data(Qt.ItemDataRole.UserRole) == current_word:
+                    listed.setData(Qt.ItemDataRole.UserRole, edited_data['word'])
+        self._editing_word = edited_data['word']
+        self._editor_baseline = self.editor.get_word_data()
+        self._update_dirty_indicator()
         self._sort_words()
         save_words(self.words_json_path, self.words)
         if refresh_ui:
@@ -665,56 +585,7 @@ class MainWindow(QMainWindow):
         return True
 
     def _on_generate_all_clicked(self) -> None:
-        edited_data = self.editor.get_word_data()
-        if not self._on_save_word_clicked(edited_data, refresh_ui=False):
-            return
-        word = edited_data["word"]
-        target = self._find_word(word)
-        if not target:
-            self._show_error(f"Word not found: {word}")
-            return
-        snapshot = dict(target)
-        self._update_audio_status(word)
-
-        def task(progress: Callable[[int], None], log: Callable[[str], None]) -> dict[str, str]:
-            log(f"Generating all for '{snapshot.get('word', '<unknown>')}'...")
-            progress(15)
-            result = self._generate_all_for_entry(snapshot)
-            progress(100)
-            return result
-
-        self._start_task(
-            status_text="Generating metadata and audio...",
-            fn=task,
-            on_success=lambda updated: self._finish_audio_generation(word, updated),
-            allow_browse_audio=True,
-        )
-
-    def _generate_all_for_entry(self, entry: dict[str, str]) -> dict[str, str]:
-        prepared = dict(entry)
-        if self.gpt_generator is not None:
-            prepared = self.gpt_generator.ensure_metadata(prepared)
-        self.tts_generator.generate_audio(prepared, self.audio_dir)
-        return prepared
-
-    def _finish_audio_generation(self, old_word: str, updated: object) -> None:
-        if isinstance(updated, dict):
-            new_word = str(updated.get("word", old_word)).strip().lower() or old_word
-            for idx, item in enumerate(self.words):
-                if item["word"] == old_word:
-                    merged_item = dict(updated)
-                    imported_at = self._normalize_timestamp_display(str(item.get("imported_at", "")))
-                    merged_item["imported_at"] = imported_at or self._now_timestamp()
-                    self.words[idx] = merged_item
-                    break
-            if old_word != new_word:
-                rename_word_assets(self.audio_dir, old_word, new_word)
-            self._sort_words()
-            save_words(self.words_json_path, self.words)
-            self._refresh_word_list(select_word=new_word)
-            self._update_audio_status(new_word)
-        self.statusBar().showMessage("Generate All completed.", 4000)
-        self._append_log(f"Generate All completed for '{old_word}'.")
+        self._generate_selected('complete')
 
     def _on_play_word_audio_clicked(self, word: str) -> None:
         if not word:
@@ -736,16 +607,16 @@ class MainWindow(QMainWindow):
         self.audio_player.play()
         self.statusBar().showMessage(f"Playing {path.name}", 3000)
 
-    def _on_sync_to_anki_clicked(self) -> None:
-        if not self.words:
-            self._show_error("No words available to sync.")
-            return
+    def _on_sync_to_anki_clicked(self, approved_remote) -> None:
 
         snapshot = [dict(item) for item in self.words]
 
         def task(progress: Callable[[int], None], log: Callable[[str], None]) -> dict[str, object]:
             log("Syncing local cards to Anki without regenerating AI/TTS...")
             self.anki_api.check_connection()
+            current_remote = self.anki_api.get_deck_word_to_note_ids(self.deck_name)
+            if current_remote != approved_remote:
+                raise ValueError("Anki 内容已变化，请重新打开同步预览。")
             self.anki_api.ensure_deck(self.deck_name)
             self.anki_api.ensure_model(self.model_name)
 
@@ -778,7 +649,7 @@ class MainWindow(QMainWindow):
                 repaired_words.append(repaired)
                 progress(int((idx / max(1, total_prepare)) * 40))
 
-            anki_map = self.anki_api.get_deck_word_to_note_ids(self.deck_name)
+            anki_map = {word: list(ids) for word, ids in approved_remote.items()}
             local_words = set(local_map.keys())
             anki_words = set(anki_map.keys())
 
@@ -811,9 +682,9 @@ class MainWindow(QMainWindow):
                 item = local_map[word]
                 word_audio = word_audio_path(self.audio_dir, word)
                 sentence_audio = sentence_audio_path(self.audio_dir, word)
-                if not word_audio.exists() or not sentence_audio.exists():
+                if not sync_ready(item, self.audio_dir):
                     skipped += 1
-                    errors.append(f"{word}: missing audio file(s)")
+                    errors.append(f"{word}: missing translation/example or audio file(s)")
                     continue
                 note_data = dict(item)
                 note_data["example"] = highlight_target_word(note_data["example"], note_data["word"])
@@ -838,9 +709,9 @@ class MainWindow(QMainWindow):
                 item = local_map[word]
                 word_audio = word_audio_path(self.audio_dir, word)
                 sentence_audio = sentence_audio_path(self.audio_dir, word)
-                if not word_audio.exists() or not sentence_audio.exists():
+                if not sync_ready(item, self.audio_dir):
                     skipped += 1
-                    errors.append(f"{word}: missing audio file(s)")
+                    errors.append(f"{word}: missing translation/example or audio file(s)")
                     continue
                 note_data = dict(item)
                 note_data["example"] = highlight_target_word(note_data["example"], note_data["word"])
@@ -939,7 +810,7 @@ class MainWindow(QMainWindow):
             self._show_error("Unexpected sync result.")
             return
         words = result.get("words")
-        if isinstance(words, list) and words:
+        if isinstance(words, list):
             self.words = words
             self._ensure_imported_at_fields()
             self._sort_words()
@@ -949,6 +820,7 @@ class MainWindow(QMainWindow):
         updated = int(result.get("updated", 0))
         deleted = int(result.get("deleted", 0))
         skipped = int(result.get("skipped", 0))
+        self.progress_label.setText(f'同步完成：新增 {created} · 更新 {updated} · 删除 {deleted} · 跳过 {skipped}')
         errors = result.get("errors", [])
         self.statusBar().showMessage(
             f"Sync completed. Created: {created}, Updated: {updated}, Deleted: {deleted}, Skipped: {skipped}",
@@ -989,28 +861,37 @@ class MainWindow(QMainWindow):
 
         def cleanup() -> None:
             self._ui_flush_timer.stop()
+            while self._pending_logs:
+                self._flush_worker_ui_updates()
             self._flush_worker_ui_updates()
             self._set_busy(False, "Ready")
-            self.progress_label.setText("Ready")
-            self._workers.discard(worker)
-            worker.deleteLater()
+            self.progress_label.setText("任务完成")
 
         def on_ok(result: object) -> None:
+            cleanup()
             try:
                 on_success(result)
-            finally:
-                cleanup()
+            except Exception as exc:
+                self.progress_label.setText('结果处理失败')
+                self._show_error(str(exc))
 
         def on_fail(message: str) -> None:
-            try:
-                self._show_error(message)
-            finally:
-                cleanup()
+            cleanup()
+            for entry in self.words:
+                if entry['word'] in self._generating_words:
+                    entry['generation_error'] = message
+            self._generating_words.clear()
+            save_words(self.words_json_path, self.words)
+            self._refresh_word_list()
+            self.progress_label.setText("任务失败，可重试")
+            self._show_error(message)
 
         worker.succeeded.connect(on_ok)
         worker.failed.connect(on_fail)
         worker.progress_changed.connect(self._enqueue_worker_progress)
         worker.log_message.connect(self._enqueue_worker_log)
+        worker.finished.connect(lambda: self._workers.discard(worker))
+        worker.finished.connect(worker.deleteLater)
         worker.start()
 
     def _enqueue_worker_progress(self, percent: int) -> None:
@@ -1037,6 +918,13 @@ class MainWindow(QMainWindow):
 
     def _set_busy(self, busy: bool, status: str, allow_browse_audio: bool = False) -> None:
         self._task_busy = busy
+        # Native indeterminate animation keeps moving during network waits;
+        # the adjacent label retains the real reported percentage.
+        self.progress_bar.setVisible(busy)
+        self.progress_bar.setRange(0, 0 if busy else 100)
+        self.progress_bar.setTextVisible(not busy)
+        if not busy:
+            self.progress_bar.setValue(self._last_progress)
         self._busy_allows_browse_audio = bool(busy and allow_browse_audio)
         selected_count = len(self._selected_words())
         has_selection = selected_count > 0
@@ -1046,6 +934,8 @@ class MainWindow(QMainWindow):
         self.generate_all_button.setEnabled((not busy) and has_single_selection)
         self.sync_button.setEnabled(not busy)
         self.settings_button.setEnabled(not busy)
+        for button in (self.article_button, self.retry_button, self.audio_button, self.anki_status):
+            button.setEnabled(not busy)
         self.delete_button.setEnabled((not busy) and has_selection)
 
         if self._busy_allows_browse_audio:
@@ -1109,16 +999,13 @@ class MainWindow(QMainWindow):
         new_settings = dialog.get_settings()
         self._apply_runtime_settings(new_settings)
         save_app_settings(self.settings_path, self.settings, self.default_settings)
+        self.anki_status.setText('Anki：未检测')
         self.statusBar().showMessage("Settings saved and applied.", 5000)
         self._append_log(
             "Settings updated. "
             f"model={self.model}, batch={self.metadata_batch_size}, tts_workers={self.tts_max_workers}, "
             f"anki_upload_workers={self.anki_upload_workers}"
         )
-
-    @staticmethod
-    def _has_missing_metadata(item: dict[str, str]) -> bool:
-        return any(not str(item.get(field, "")).strip() for field in ("phonetic", "part_of_speech", "example", "analysis"))
 
     def _summarize_audio_health(self) -> None:
         if not self.words:
@@ -1145,7 +1032,8 @@ class MainWindow(QMainWindow):
     def _apply_theme(self) -> None:
         self.setStyleSheet(
             """
-            QMainWindow, QWidget#AppRoot {
+            QMainWindow,
+    QMenu, QWidget#AppRoot {
                 background-color: #111318;
                 color: #E5E7EB;
                 font-size: 12px;
@@ -1239,17 +1127,39 @@ class MainWindow(QMainWindow):
         )
 
     def _show_error(self, message: str) -> None:
+        self.log_toggle.setChecked(True)
         self.statusBar().showMessage(message, 5000)
         self._append_log(message, level="ERROR")
         QMessageBox.critical(self, "Error", message)
 
     def _set_progress(self, percent: int) -> None:
         safe = max(0, min(100, int(percent)))
-        self.progress_bar.setValue(safe)
+        self._last_progress = safe
+        if not self._task_busy:
+            self.progress_bar.setValue(safe)
         text = self.progress_label.text().split(" (", 1)[0]
         if text and text != "Ready":
             self.progress_label.setText(f"{text} ({safe}%)")
 
+    def _toggle_log(self, expanded):
+        self.log_widget.setVisible(expanded)
+        self.clear_log_button.setVisible(expanded)
+        self.log_toggle.setText("收起日志" if expanded else "展开日志")
+
+    def _clear_log(self) -> None:
+        self._pending_logs.clear()
+        self.log_widget.clear()
+
+    def _show_log_context_menu(self, position) -> None:
+        menu = self.log_widget.createStandardContextMenu()
+        menu.addSeparator()
+        clear_action = menu.addAction("Clear Log")
+        clear_action.triggered.connect(self._clear_log)
+        menu.exec(self.log_widget.mapToGlobal(position))
+        menu.deleteLater()
+
     def _append_log(self, message: str, level: str = "INFO") -> None:
+        if level.upper() == "ERROR":
+            self.log_toggle.setChecked(True)
         stamp = datetime.now().strftime("%H:%M:%S")
         self.log_widget.appendPlainText(f"[{stamp}] {level.upper()} {message}")

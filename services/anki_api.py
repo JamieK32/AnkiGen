@@ -93,16 +93,21 @@ class AnkiAPI:
                     }
                 },
             )
-        except AnkiConnectError:
-            return
+        except AnkiConnectError as exc:
+            raise AnkiConnectError(f"Could not update the dictation card template: {exc}") from exc
 
     @staticmethod
     def _front_template() -> str:
-        return "{{Word}}<br>{{Phonetic}}<br>{{PartOfSpeech}}<br>{{AudioWord}}<br>{{AudioSentence}}"
+        return "{{Translation}}<br><br>{{type:Word}}"
 
     @staticmethod
     def _back_template() -> str:
-        return "{{FrontSide}}<hr id=answer>{{Translation}}<br><br>{{Example}}<br>{{Analysis}}"
+        return (
+            "{{Translation}}<hr id=answer>{{type:Word}}<br><br>"
+            "{{Word}}<br>{{Phonetic}}<br>{{PartOfSpeech}}<br>"
+            '{{AudioWord}}<br>{{AudioSentence}}<br><br>'
+            '<div style="white-space: pre-line">{{Example}}</div><br>{{Analysis}}'
+        )
 
     def find_notes(self, deck_name: str, word: str) -> list[int]:
         query = f'deck:"{deck_name}" Word:"{word}"'

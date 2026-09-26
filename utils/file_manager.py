@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import re
 from pathlib import Path
@@ -42,6 +43,9 @@ def load_words(json_path: Path) -> list[dict[str, str]]:
                 "example": str(item.get("example", "")).strip(),
                 "analysis": str(item.get("analysis", "")).strip(),
                 "imported_at": str(item.get("imported_at", "")).strip(),
+                "source_text": str(item.get("source_text", "")),
+                "generation_error": str(item.get("generation_error", "")),
+                "generation_mode": str(item.get("generation_mode", "complete")),
             }
         )
     return items
@@ -60,6 +64,9 @@ def repair_word_data(
         "example": str(word_data.get("example", "")).strip(),
         "analysis": str(word_data.get("analysis", "")).strip(),
         "imported_at": str(word_data.get("imported_at", "")).strip(),
+        "source_text": str(word_data.get("source_text", "")),
+        "generation_error": str(word_data.get("generation_error", "")),
+        "generation_mode": str(word_data.get("generation_mode", "complete")),
     }
     if not repaired["word"]:
         raise ValueError("Cannot repair word data: missing word.")
@@ -70,13 +77,31 @@ def repair_word_data(
 
 def save_words(json_path: Path, words: list[dict[str, str]]) -> None:
     json_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(json.dumps(words, ensure_ascii=False, indent=2), encoding="utf-8")
+    temporary = json_path.with_suffix(".json.tmp")
+    temporary.write_text(json.dumps(words, ensure_ascii=False, indent=2), encoding="utf-8")
+    temporary.replace(json_path)
+
+
+def parse_import_text(text: str, mode: str = "comma") -> list[str]:
+    if mode == "comma":
+        return parse_words_text(text)
+    if mode != "lines":
+        raise ValueError("Unknown import mode")
+    return list(dict.fromkeys(
+        re.sub(r"\s+", " ", line).strip().lower()
+        for line in text.splitlines() if line.strip()
+    ))
 
 
 def parse_words_text(input_text: str) -> list[str]:
     """Parse comma-separated words/phrases into unique normalized entries."""
     raw = (input_text or "").replace("，", ",")
-    tokens = raw.split(",")
+    # Quoted CSV entries preserve commas inside a collocation. Keep whitespace
+    # normalization and ordinary comma-separated input backward compatible.
+    try:
+        tokens = next(csv.reader([raw.replace("\r", " ").replace("\n", " ")], skipinitialspace=True, strict=True))
+    except csv.Error as exc:
+        raise ValueError('逗号格式无效，请检查双引号是否配对，或选择每行一条。') from exc
     output: list[str] = []
     seen: set[str] = set()
     for token in tokens:
@@ -114,7 +139,10 @@ def sentence_audio_path(audio_dir: Path, word: str) -> Path:
 
 
 def check_audio_exists(audio_dir: Path, word: str) -> tuple[bool, bool]:
-    return word_audio_path(audio_dir, word).exists(), sentence_audio_path(audio_dir, word).exists()
+    def usable(path: Path) -> bool:
+        return path.is_file() and path.stat().st_size > 0
+
+    return usable(word_audio_path(audio_dir, word)), usable(sentence_audio_path(audio_dir, word))
 
 
 def delete_word_assets(audio_dir: Path, word: str) -> None:

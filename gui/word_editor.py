@@ -59,6 +59,15 @@ class WordEditor(QWidget):
                 label.setStyleSheet("QLabel { color: #9CA3AF; font-size: 12px; font-weight: 500; }")
 
         layout.addLayout(form)
+        self.source_button = QPushButton("查看来源原文")
+        self.source_button.setCheckable(True)
+        self.source_view = QTextEdit()
+        self.source_view.setReadOnly(True)
+        self.source_view.setMaximumHeight(100)
+        self.source_view.hide()
+        self.source_button.toggled.connect(self.source_view.setVisible)
+        layout.addWidget(self.source_button)
+        layout.addWidget(self.source_view)
 
         self.word_audio_status = QLabel("Word audio: -")
         self.sentence_audio_status = QLabel("Sentence audio: -")
@@ -87,6 +96,9 @@ class WordEditor(QWidget):
         self.play_sentence_button.clicked.connect(self._emit_play_sentence_audio)
 
     def clear(self) -> None:
+        self.source_button.setChecked(False)
+        self.source_button.setEnabled(False)
+        self.source_view.clear()
         self.word_edit.clear()
         self.phonetic_edit.clear()
         self.part_of_speech_edit.clear()
@@ -96,6 +108,9 @@ class WordEditor(QWidget):
         self.set_audio_status(False, False)
 
     def set_word_data(self, data: dict[str, str], word_audio_exists: bool, sentence_audio_exists: bool) -> None:
+        self.source_view.setPlainText(data.get("source_text", ""))
+        self.source_button.setChecked(False)
+        self.source_button.setEnabled(bool(data.get("source_text")))
         self.word_edit.setText(data.get("word", ""))
         self.phonetic_edit.setText(data.get("phonetic", ""))
         self.part_of_speech_edit.setText(data.get("part_of_speech", ""))

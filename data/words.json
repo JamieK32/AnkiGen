@@ -1,794 +1,182 @@
 [
   {
-    "word": "prestigious",
-    "phonetic": "/preˈstɪdʒəs/",
-    "part_of_speech": "adjective",
-    "translation": "享有声望的；有威望的",
-    "example": "She won a prestigious award for her research.\n她因研究成果获得了一项享有声望的奖项。",
-    "analysis": "形容在社会或专业领域中地位高、受人尊敬的",
-    "imported_at": "2026-03-08 16:33:42"
+    "word": "changes in people's diets",
+    "phonetic": "/ˈtʃeɪndʒɪz ɪn ˈpiːpəlz ˈdaɪəts/",
+    "part_of_speech": "noun phrase",
+    "translation": "人们饮食的变化",
+    "example": "The study looks at changes in people's diets over time.\n这项研究考察了人们饮食随时间的变化。",
+    "analysis": "指人们饮食习惯发生的改变",
+    "imported_at": "2026-09-26 16:31:55"
   },
   {
-    "word": "aspiration",
-    "phonetic": "/ˌæspəˈreɪʃn/",
-    "part_of_speech": "noun",
-    "translation": "抱负；渴望",
-    "example": "She has high aspirations to become a surgeon.\n她有成为外科医生的远大抱负。",
-    "analysis": "指对成就或目标的强烈愿望",
-    "imported_at": "2026-03-08 16:30:34"
+    "word": "have enough to eat",
+    "phonetic": "/hæv ɪˈnʌf tə iːt/",
+    "part_of_speech": "verb phrase",
+    "translation": "有足够食物吃；能吃饱",
+    "example": "Many families still do not have enough to eat.\n许多家庭仍然没有足够的食物吃。",
+    "analysis": "表示拥有充足的食物可吃",
+    "imported_at": "2026-09-26 16:31:55"
   },
   {
-    "word": "uncertain",
-    "phonetic": "/ʌnˈsɜːrtn/",
-    "part_of_speech": "adjective",
-    "translation": "不确定的；不可靠的",
-    "example": "The future of the project remains uncertain.\n该项目的未来仍不确定。",
-    "analysis": "指缺乏把握或无法预知",
-    "imported_at": "2026-03-08 15:49:35"
+    "word": "local agricultural products",
+    "phonetic": "/ˈləʊkəl ˌæɡrɪˈkʌltʃərəl ˈprɒdʌkts/",
+    "part_of_speech": "noun phrase",
+    "translation": "当地农产品",
+    "example": "The market sells fresh local agricultural products.\n这个市场出售新鲜的当地农产品。",
+    "analysis": "指本地生产的农业产品",
+    "imported_at": "2026-09-26 16:31:55"
   },
   {
-    "word": "operation",
-    "phonetic": "/ˌɑːpəˈreɪʃn/",
-    "part_of_speech": "noun",
-    "translation": "操作；手术；行动",
-    "example": "The factory is now in full operation.\n工厂目前全面投入运营。",
-    "analysis": "指执行某项任务或工作的过程",
-    "imported_at": "2026-03-08 15:49:35"
+    "word": "local specialties from all over the country",
+    "phonetic": "/ˈloʊkl ˈspɛʃəltiz frəm ɔːl ˈoʊvər ðə ˈkʌntri/",
+    "part_of_speech": "noun phrase",
+    "translation": "全国各地的地方特产",
+    "example": "The market sells local specialties from all over the country.\n这个市场出售来自全国各地的地方特产。",
+    "analysis": "表示来自全国各地的本地特色产品。",
+    "imported_at": "2026-09-26 16:21:58"
   },
   {
-    "word": "transition",
-    "phonetic": "/trænˈzɪʃn/",
-    "part_of_speech": "noun",
-    "translation": "过渡；转变",
-    "example": "The country is in a period of political transition.\n该国正处于政治过渡期。",
-    "analysis": "指从一种状态向另一种状态的改变",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "regime",
-    "phonetic": "/reɪˈʒiːm/",
-    "part_of_speech": "noun",
-    "translation": "政权；体制",
-    "example": "The old regime was overthrown by the revolution.\n旧政权被革命推翻了。",
-    "analysis": "指特定的政府系统或管理体制",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "degrade",
-    "phonetic": "/dɪˈɡreɪd/",
-    "part_of_speech": "verb",
-    "translation": "降低；贬低；退化",
-    "example": "Pollution can degrade the quality of the soil.\n污染会降低土壤质量。",
-    "analysis": "指品质、价值或地位的下降",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "military",
-    "phonetic": "/ˈmɪləteri/",
-    "part_of_speech": "adjective",
-    "translation": "军事的；军用的",
-    "example": "The government increased military spending this year.\n政府今年增加了军事开支。",
-    "analysis": "与军队、战争或武装力量相关",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "capability",
-    "phonetic": "/ˌkeɪpəˈbɪləti/",
-    "part_of_speech": "noun",
-    "translation": "能力；性能",
-    "example": "The new software has the capability to process data quickly.\n该新软件具备快速处理数据的能力。",
-    "analysis": "指完成某事所需的技能或力量",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "leadership",
-    "phonetic": "/ˈliːdərʃɪp/",
-    "part_of_speech": "noun",
-    "translation": "领导力；领导层",
-    "example": "Strong leadership is essential for a successful team.\n强大的领导力对于成功的团队至关重要。",
-    "analysis": "指领导的能力或担任领导职务的人员",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "institution",
-    "phonetic": "/ˌɪnstɪˈtuːʃn/",
-    "part_of_speech": "noun",
-    "translation": "机构；制度",
-    "example": "The university is a prestigious academic institution.\n这所大学是一所享有盛誉的学术机构。",
-    "analysis": "指大型组织或社会习俗、制度",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "structure",
-    "phonetic": "/ˈstrʌktʃər/",
-    "part_of_speech": "noun",
-    "translation": "结构；构造",
-    "example": "The company has a complex organizational structure.\n这家公司有着复杂的组织结构。",
-    "analysis": "指事物的组织方式或构造。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "challenge",
-    "phonetic": "/ˈtʃælɪndʒ/",
-    "part_of_speech": "noun",
-    "translation": "挑战；难题",
-    "example": "Learning a new language is a difficult challenge.\n学习一门新语言是一项艰巨的挑战。",
-    "analysis": "指需要努力克服的困难或任务。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "leverage",
-    "phonetic": "/ˈliːvərɪdʒ/",
-    "part_of_speech": "verb",
-    "translation": "利用；发挥作用",
-    "example": "We should leverage our existing resources to succeed.\n我们应该利用现有资源来取得成功。",
-    "analysis": "指充分利用某物以获得最大效益。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "strategy",
-    "phonetic": "/ˈstrætədʒi/",
-    "part_of_speech": "noun",
-    "translation": "策略；战略",
-    "example": "They developed a new marketing strategy for the product.\n他们为该产品制定了新的营销策略。",
-    "analysis": "指为实现长期目标而制定的计划。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "escalate",
-    "phonetic": "/ˈeskəleɪt/",
-    "part_of_speech": "verb",
-    "translation": "升级；加剧",
-    "example": "The conflict began to escalate rapidly.\n冲突开始迅速升级。",
-    "analysis": "指事态变得更加严重或激烈。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "infrastructure",
-    "phonetic": "/ˈɪnfrəˌstrʌktʃər/",
-    "part_of_speech": "noun",
-    "translation": "基础设施",
-    "example": "The government is investing heavily in the country's transport infrastructure.\n政府正在对该国的交通基础设施进行大量投资。",
-    "analysis": "指支撑社会或系统运作的基础结构，如交通、电力、通信等。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "incentive",
-    "phonetic": "/ɪnˈsentɪv/",
-    "part_of_speech": "noun",
-    "translation": "激励；刺激",
-    "example": "The bonus acts as an incentive for employees to work harder.\n奖金是对员工努力工作的激励。",
-    "analysis": "指促使某人采取行动的动力。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "diplomacy",
-    "phonetic": "/dɪˈpləʊməsi/",
-    "part_of_speech": "noun",
-    "translation": "外交；策略",
-    "example": "The crisis was resolved through quiet diplomacy.\n这场危机通过低调的外交手段得到了解决。",
-    "analysis": "指处理国际关系或人际交往的技巧。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "proxy",
-    "phonetic": "/ˈprɒksi/",
-    "part_of_speech": "noun",
-    "translation": "代理人；代表",
-    "example": "He voted by proxy at the shareholders' meeting.\n他在股东大会上通过代理人投票。",
-    "analysis": "指代他人行事的人或事物。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "program",
-    "phonetic": "/ˈprəʊɡræm/",
-    "part_of_speech": "noun",
-    "translation": "计划；程序",
-    "example": "The government launched a new training program.\n政府启动了一项新的培训计划。",
-    "analysis": "指一系列有组织的活动或计算机指令。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "conflict",
-    "phonetic": "/ˈkɒnflɪkt/",
-    "part_of_speech": "noun",
-    "translation": "冲突；矛盾",
-    "example": "The two countries are trying to resolve their border conflict.\n两国正试图解决他们的边界冲突。",
-    "analysis": "指意见、利益或武装力量之间的对立",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "existential",
-    "phonetic": "/ˌeɡzɪˈstenʃl/",
-    "part_of_speech": "adjective",
-    "translation": "存在的；有关生存的",
-    "example": "Climate change poses an existential threat to many island nations.\n气候变化对许多岛国构成了生存威胁。",
-    "analysis": "指关乎生命存续或本质意义的",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "cost",
-    "phonetic": "/kɒst/",
-    "part_of_speech": "noun",
-    "translation": "成本；代价",
-    "example": "The cost of living has risen significantly this year.\n今年生活成本显著上升。",
-    "analysis": "指为获得某物所付出的金钱、时间或努力",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "global",
-    "phonetic": "/ˈɡləʊbl/",
-    "part_of_speech": "adjective",
-    "translation": "全球的；总体的",
-    "example": "We need a global approach to solve environmental issues.\n我们需要一种全球性的方法来解决环境问题。",
-    "analysis": "指涉及整个地球或整体范围的",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "economy",
-    "phonetic": "/ɪˈkɒnəmi/",
-    "part_of_speech": "noun",
-    "translation": "经济；节约",
-    "example": "The government is working to stabilize the national economy.\n政府正致力于稳定国民经济。",
-    "analysis": "指一个国家或地区的生产、贸易和消费系统",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "survival",
-    "phonetic": "/səˈvaɪvl/",
-    "part_of_speech": "noun",
-    "translation": "生存；幸存",
-    "example": "Water is essential for the survival of all living things.\n水对所有生物的生存至关重要。",
-    "analysis": "指继续存在或活下去的状态",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "usher in",
-    "phonetic": "/ˈʌʃər ɪn/",
-    "part_of_speech": "phrasal verb",
-    "translation": "开创；开启（新时代等）",
-    "example": "The invention of the internet helped usher in the digital age.\n互联网的发明开启了数字时代。",
-    "analysis": "指引领或标志着新事物的开始",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "rally",
-    "phonetic": "/ˈræli/",
-    "part_of_speech": "verb",
-    "translation": "召集；集合；回升",
-    "example": "Supporters began to rally in the city center.\n支持者们开始在市中心集合。",
-    "analysis": "指为了共同目的聚集在一起或价格回升",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "revolution",
-    "phonetic": "/ˌrevəˈluːʃn/",
-    "part_of_speech": "noun",
-    "translation": "革命；彻底变革",
-    "example": "The industrial revolution changed the way people lived.\n工业革命改变了人们的生活方式。",
-    "analysis": "指社会制度的剧变或领域内的重大突破",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "airstrike",
-    "phonetic": "/ˈeəstraɪk/",
-    "part_of_speech": "noun",
-    "translation": "空袭",
-    "example": "The military launched an airstrike on the enemy base.\n军方对敌方基地发动了空袭。",
-    "analysis": "指由飞机进行的军事轰炸行动",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "decapitate",
-    "phonetic": "/dɪˈkæpɪteɪt/",
-    "part_of_speech": "verb",
-    "translation": "斩首；使失去领导",
-    "example": "The rebels attempted to decapitate the government by capturing its leaders.\n叛军试图通过俘获政府领导人来瘫痪政府。",
-    "analysis": "源自拉丁语，意为砍掉头颅，引申为削弱组织核心。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "embedded",
-    "phonetic": "/ɪmˈbedɪd/",
-    "part_of_speech": "adjective",
-    "translation": "嵌入的；深植的",
-    "example": "The microchip is embedded in the plastic casing.\n微芯片被嵌入在塑料外壳中。",
-    "analysis": "指牢固地固定在某物内部或成为某物的一部分。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "underpin",
-    "phonetic": "/ˌʌndəˈpɪn/",
-    "part_of_speech": "verb",
-    "translation": "巩固；支撑；作为…的基础",
-    "example": "These economic theories underpin his entire political philosophy.\n这些经济理论构成了他整个政治哲学的基础。",
-    "analysis": "指为某事物提供结构性支持或理论依据。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "vestige",
-    "phonetic": "/ˈvestɪdʒ/",
-    "part_of_speech": "noun",
-    "translation": "遗迹；残余",
-    "example": "These ruins are the last vestige of a once-great civilization.\n这些废墟是一个曾经伟大文明的最后遗迹。",
-    "analysis": "指过去事物的微小残留或痕迹。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "overwhelming",
-    "phonetic": "/ˌəʊvəˈwelmɪŋ/",
-    "part_of_speech": "adjective",
-    "translation": "压倒性的；无法抗拒的",
-    "example": "She felt an overwhelming sense of relief after the exam.\n考试结束后，她感到一种难以抑制的解脱感。",
-    "analysis": "形容程度极高，以至于难以承受或抵抗。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "attrition",
-    "phonetic": "/əˈtrɪʃn/",
-    "part_of_speech": "noun",
-    "translation": "消耗；磨损；人员缩减",
-    "example": "The company is suffering from a high rate of staff attrition.\n该公司正遭受高员工流失率的困扰。",
-    "analysis": "指通过持续的压力或消耗使对方力量逐渐减弱。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "uprising",
-    "phonetic": "/ˈʌpraɪzɪŋ/",
-    "part_of_speech": "noun",
-    "translation": "起义；暴动",
-    "example": "The military crushed the popular uprising within days.\n军队在几天内镇压了民众起义。",
-    "analysis": "指针对当局或统治者的反抗行动。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "bombardment",
-    "phonetic": "/bɒmˈbɑːdmənt/",
-    "part_of_speech": "noun",
-    "translation": "轰炸；炮击",
-    "example": "The city was under constant bombardment for weeks.\n这座城市连续数周遭到持续轰炸。",
-    "analysis": "指持续不断的炮火攻击或猛烈抨击。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "stake",
-    "phonetic": "/steɪk/",
-    "part_of_speech": "noun",
-    "translation": "赌注；股份；利害关系",
-    "example": "He has a large financial stake in the company.\n他在该公司拥有巨大的经济利益。",
-    "analysis": "指投入的赌注、股份或与某事相关的利害关系",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "impose",
-    "phonetic": "/ɪmˈpəʊz/",
-    "part_of_speech": "verb",
-    "translation": "强加；征收",
-    "example": "The government decided to impose new taxes on luxury goods.\n政府决定对奢侈品征收新税。",
-    "analysis": "指强制执行某项规定或将某物强加于人。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "usher in the aspirations",
-    "phonetic": "/ˈʌʃər ɪn ði ˌæspəˈreɪʃənz/",
+    "word": "there is no doubt that",
+    "phonetic": "/ðeər ɪz noʊ daʊt ðæt/",
     "part_of_speech": "phrase",
-    "translation": "开启愿景；迎来抱负",
-    "example": "The new policy aims to usher in the aspirations of the younger generation.\n这项新政策旨在开启年轻一代的愿景。",
-    "analysis": "usher in意为开创或迎来，aspirations指宏大的志向或愿望。",
-    "imported_at": "2026-03-08 15:49:35"
+    "translation": "毫无疑问",
+    "example": "There is no doubt that the team will win the championship.\n毫无疑问，这支队伍将赢得冠军。",
+    "analysis": "用于强调对某事的确定性，表示完全确信。",
+    "imported_at": "2026-09-26 16:11:16"
   },
   {
-    "word": "transition to a different regime",
-    "phonetic": "/trænˈzɪʃn tuː ə ˈdɪfrənt reɪˈʒiːm/",
+    "word": "food quality",
+    "phonetic": "/fuːd ˈkwɒləti/",
+    "part_of_speech": "noun phrase",
+    "translation": "食品质量",
+    "example": "The restaurant is known for its high food quality.\n这家餐厅以其高品质的食品而闻名。",
+    "analysis": "指食品的优劣程度或特性",
+    "imported_at": "2026-09-26 16:11:16"
+  },
+  {
+    "word": "dietary structure",
+    "phonetic": "/ˈdaɪəˌtɛri ˈstrʌkʧər/",
+    "part_of_speech": "noun phrase",
+    "translation": "饮食结构",
+    "example": "A balanced dietary structure is essential for good health.\n均衡的饮食结构对健康至关重要。",
+    "analysis": "指日常饮食中各类食物的组成与比例",
+    "imported_at": "2026-09-26 16:11:16"
+  },
+  {
+    "word": "the improvement of food quality and dietary structure",
+    "phonetic": "/ði ɪmˈpruːvmənt əv fuːd ˈkwɒləti ənd ˈdaɪətəri ˈstrʌktʃər/",
+    "part_of_speech": "noun phrase",
+    "translation": "食品质量和膳食结构的改善",
+    "example": "The government focuses on the improvement of food quality and dietary structure.\n政府关注食品质量和膳食结构的改善。",
+    "analysis": "指食品品质和日常饮食构成的提升与优化",
+    "imported_at": "2026-09-26 16:11:16"
+  },
+  {
+    "word": "improve people's health",
+    "phonetic": "/ɪmˈpruːv ˈpiːpəlz hɛlθ/",
+    "part_of_speech": "verb phrase",
+    "translation": "改善人们的健康",
+    "example": "Regular exercise can significantly improve people's health.\n定期锻炼能显著改善人们的健康。",
+    "analysis": "指通过各种方式提升人们的健康水平",
+    "imported_at": "2026-09-26 16:11:16"
+  },
+  {
+    "word": "taste local specialties easily",
+    "phonetic": "/teɪst ˈloʊkl speʃiˈælətiz ˈiːzəli/",
     "part_of_speech": "phrase",
-    "translation": "过渡到不同的政权/体制",
-    "example": "The country is preparing for a peaceful transition to a different regime.\n该国正准备和平过渡到不同的政权。",
-    "analysis": "指从一种政治制度或管理体制平稳转换到另一种。",
-    "imported_at": "2026-03-08 15:49:35"
+    "translation": "轻松品尝当地特色美食",
+    "example": "With the food tour, you can taste local specialties easily.\n通过美食之旅，你可以轻松品尝当地特色美食。",
+    "analysis": "指不费力地体验地方特色食物",
+    "imported_at": "2026-09-26 16:11:16"
   },
   {
-    "word": "military capabilities",
-    "phonetic": "/ˈmɪlɪteri ˌkeɪpəˈbɪlətiz/",
-    "part_of_speech": "noun phrase",
-    "translation": "军事能力",
-    "example": "The nation is investing heavily to enhance its military capabilities.\n该国正投入巨资以增强其军事能力。",
-    "analysis": "指国家在军事方面的实力与作战潜力。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "political leadership",
-    "phonetic": "/pəˈlɪtɪkəl ˈliːdərʃɪp/",
-    "part_of_speech": "noun phrase",
-    "translation": "政治领导层",
-    "example": "The political leadership is facing mounting pressure from the public.\n政治领导层正面临来自公众的巨大压力。",
-    "analysis": "指掌握政治权力的核心人物或群体。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "power structure",
-    "phonetic": "/ˈpaʊər ˈstrʌktʃər/",
-    "part_of_speech": "noun phrase",
-    "translation": "权力结构",
-    "example": "The revolution fundamentally changed the existing power structure.\n这场革命从根本上改变了现有的权力结构。",
-    "analysis": "指社会或组织中权力的分配与层级关系。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "regain leverage",
-    "phonetic": "/rɪˈɡeɪn ˈliːvərɪdʒ/",
-    "part_of_speech": "phrase",
-    "translation": "重获筹码；恢复影响力",
-    "example": "They need to negotiate carefully to regain leverage in the talks.\n他们需要谨慎谈判以在会谈中重获筹码。",
-    "analysis": "leverage在此指谈判或竞争中的优势地位。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "deploy strategy",
-    "phonetic": "/dɪˈplɔɪ ˈstrætədʒi/",
-    "part_of_speech": "phrase",
-    "translation": "部署策略",
-    "example": "The company needs to deploy strategy to increase market share.\n公司需要部署策略以增加市场份额。",
-    "analysis": "指有计划地实施或运用某种策略以达到特定目标",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "economic infrastructure",
-    "phonetic": "/ˌiːkəˈnɒmɪk ˈɪnfrəˌstrʌktʃər/",
-    "part_of_speech": "noun phrase",
-    "translation": "经济基础设施",
-    "example": "Developing the economic infrastructure is vital for long-term growth.\n发展经济基础设施对长期增长至关重要。",
-    "analysis": "指支撑经济运行的基础设施，如交通、能源网络等。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "create pressure",
-    "phonetic": "/kriˈeɪt ˈpreʃər/",
-    "part_of_speech": "phrase",
-    "translation": "施加压力",
-    "example": "The sanctions are intended to create pressure on the government.\n这些制裁旨在对政府施加压力。",
-    "analysis": "指通过某种手段迫使对方做出改变。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "survival strategy",
-    "phonetic": "/sərˈvaɪvəl ˈstrætədʒi/",
-    "part_of_speech": "noun phrase",
-    "translation": "生存策略",
-    "example": "Adapting to climate change is now a core survival strategy for many species.\n适应气候变化现在是许多物种的核心生存策略。",
-    "analysis": "指为了存续下去而采取的行动计划。",
-    "imported_at": "2026-03-08 15:49:35"
-  },
-  {
-    "word": "death",
-    "phonetic": "/deθ/",
-    "part_of_speech": "noun",
-    "translation": "死亡",
-    "example": "The news of his death shocked everyone.\n他去世的消息震惊了所有人。",
-    "analysis": "指生命活动的永久停止",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "supreme leader",
-    "phonetic": "/suːˈpriːm ˈliːdər/",
-    "part_of_speech": "noun phrase",
-    "translation": "最高领导人",
-    "example": "The supreme leader addressed the nation on television.\n最高领导人在电视上向全国发表了讲话。",
-    "analysis": "指拥有最高权力的政治领袖",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "succeed",
-    "phonetic": "/səkˈsiːd/",
-    "part_of_speech": "verb",
-    "translation": "成功；继任",
-    "example": "She worked hard to succeed in her career.\n她努力工作以在事业上取得成功。",
-    "analysis": "指达成目标或接替职位",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "monarchy",
-    "phonetic": "/ˈmɒnərki/",
-    "part_of_speech": "noun",
-    "translation": "君主制",
-    "example": "The country has been a constitutional monarchy for centuries.\n这个国家几个世纪以来一直实行君主立宪制。",
-    "analysis": "由国王或女王统治的国家制度",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "israeli airstrike",
-    "phonetic": "/ˈɪzreɪli ˈeərstraɪk/",
-    "part_of_speech": "noun phrase",
-    "translation": "以色列空袭",
-    "example": "The building was destroyed in an Israeli airstrike.\n那栋建筑在一次以色列空袭中被摧毁。",
-    "analysis": "指以色列军队发动的空中打击行动",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "compound",
-    "phonetic": "/ˈkɒmpaʊnd/",
-    "part_of_speech": "noun",
-    "translation": "大院；复合词",
-    "example": "The embassy is located within a secure compound.\n大使馆位于一个戒备森严的大院内。",
-    "analysis": "指围起来的建筑群或混合物",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "momentous",
-    "phonetic": "/məˈmentəs/",
-    "part_of_speech": "adjective",
-    "translation": "重大的；关键的",
-    "example": "It was a momentous decision that changed the course of history.\n这是一个改变历史进程的重大决定。",
-    "analysis": "形容具有深远影响或重要性的",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "over the course of",
-    "phonetic": "/ˈəʊvər ðə kɔːrs əv/",
-    "part_of_speech": "phrase",
-    "translation": "在……期间",
-    "example": "Over the course of the meeting, they discussed several issues.\n在会议期间，他们讨论了几个议题。",
-    "analysis": "用于描述某事在一段时间内发生",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "cement",
-    "phonetic": "/sɪˈment/",
-    "part_of_speech": "verb",
-    "translation": "巩固；加强",
-    "example": "The two countries signed a treaty to cement their alliance.\n两国签署了一项条约以巩固其联盟关系。",
-    "analysis": "比喻使关系或协议变得稳固",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "dominance",
-    "phonetic": "/ˈdɒmɪnəns/",
-    "part_of_speech": "noun",
-    "translation": "优势；统治地位",
-    "example": "The company maintains its dominance in the tech market.\n该公司保持着在科技市场的统治地位。",
-    "analysis": "指在竞争中占据主导或支配地位",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "office",
-    "phonetic": "/ˈɒfɪs/",
-    "part_of_speech": "noun",
-    "translation": "办公室；职位",
-    "example": "She is working in her office today.\n她今天在办公室工作。",
-    "analysis": "指工作场所或担任的公职",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "thwart",
-    "phonetic": "/θwɔːt/",
-    "part_of_speech": "verb",
-    "translation": "阻挠；挫败",
-    "example": "The police were able to thwart the robbery.\n警察成功挫败了那起抢劫案。",
-    "analysis": "指阻止某人实现计划或意图",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "meaningful changes",
-    "phonetic": "/ˈmiːnɪŋfʊl ˈtʃeɪndʒɪz/",
-    "part_of_speech": "noun phrase",
-    "translation": "有意义的改变",
-    "example": "We need to implement meaningful changes to improve the system.\n我们需要实施有意义的改变来改善系统。",
-    "analysis": "指具有实质性价值或影响的变动",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "approach to the world",
-    "phonetic": "/əˈprəʊtʃ tuː ðə wɜːld/",
-    "part_of_speech": "noun phrase",
-    "translation": "世界观；处世之道",
-    "example": "His approach to the world is shaped by his travels.\n他的处世之道深受其旅行经历的影响。",
-    "analysis": "指一个人看待或应对世界的方式",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "empower",
-    "phonetic": "/ɪmˈpaʊər/",
-    "part_of_speech": "verb",
-    "translation": "授权；使自主",
-    "example": "Education serves to empower young people.\n教育有助于增强年轻人的自主能力。",
-    "analysis": "指赋予某人权力或能力去做某事",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "expand influence",
-    "phonetic": "/ɪkˈspænd ˈɪnfluəns/",
-    "part_of_speech": "phrase",
-    "translation": "扩大影响力",
-    "example": "The company is trying to expand influence in the global market.\n这家公司正试图扩大其在全球市场的影响力。",
-    "analysis": "指通过各种手段增加某人或某组织在特定领域的影响范围",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "across the region",
-    "phonetic": "/əˈkrɒs ðə ˈriːdʒən/",
+    "word": "since the reform and opening-up",
+    "phonetic": "/sɪns ðə rɪˈfɔːrm ənd ˈoʊpənɪŋ ʌp/",
     "part_of_speech": "prepositional phrase",
-    "translation": "遍及整个地区",
-    "example": "The storm caused damage across the region.\n这场风暴对整个地区造成了破坏。",
-    "analysis": "指覆盖或涉及某个特定地理区域",
-    "imported_at": "2026-03-06 17:02:02"
+    "translation": "自改革开放以来",
+    "example": "Since the reform and opening-up, China's economy has grown rapidly.\n自改革开放以来，中国经济快速增长。",
+    "analysis": "表示从中国改革开放政策实施开始的时间点",
+    "imported_at": "2026-09-25 11:19:45"
   },
   {
-    "word": "elimination",
-    "phonetic": "/ɪˌlɪmɪˈneɪʃn/",
-    "part_of_speech": "noun",
-    "translation": "消除；淘汰",
-    "example": "The elimination of poverty is a major goal.\n消除贫困是一个主要目标。",
-    "analysis": "指彻底移除或排除某事物",
-    "imported_at": "2026-03-06 17:02:02"
+    "word": "people's living standards have continuously improved",
+    "phonetic": "/ˈpiːpəlz ˈlɪvɪŋ ˈstændərdz həv kənˈtɪnjuəsli ɪmˈpruːvd/",
+    "part_of_speech": "phrase",
+    "translation": "人民生活水平持续提高",
+    "example": "People's living standards have continuously improved over the past decade.\n过去十年，人民生活水平持续提高。",
+    "analysis": "描述民众生活质量的持续进步",
+    "imported_at": "2026-09-25 11:19:45"
   },
   {
-    "word": "elicit",
-    "phonetic": "/ɪˈlɪsɪt/",
-    "part_of_speech": "verb",
-    "translation": "引出；诱出",
-    "example": "The question failed to elicit a response.\n这个问题没能引出任何回应。",
-    "analysis": "指通过技巧或询问使某人做出反应",
-    "imported_at": "2026-03-06 17:02:02"
+    "word": "be fully reflected in",
+    "phonetic": "/bi ˈfʊli rɪˈflektɪd ɪn/",
+    "part_of_speech": "verb phrase",
+    "translation": "充分体现在",
+    "example": "The company's values are fully reflected in its customer service.\n公司的价值观充分体现在其客户服务中。",
+    "analysis": "表示某事物完全显现或表现在另一事物中",
+    "imported_at": "2026-09-25 11:19:45"
   },
   {
-    "word": "celebration",
-    "phonetic": "/ˌselɪˈbreɪʃn/",
-    "part_of_speech": "noun",
-    "translation": "庆祝；庆典",
-    "example": "They held a celebration for her retirement.\n他们为她的退休举办了庆祝活动。",
-    "analysis": "指为纪念某事而举行的庆祝活动",
-    "imported_at": "2026-03-06 17:02:02"
+    "word": "be no longer satisfied with",
+    "phonetic": "/bi noʊ ˈlɒŋɡər ˈsætɪsfaɪd wɪð/",
+    "part_of_speech": "verb phrase",
+    "translation": "不再满足于",
+    "example": "Consumers are no longer satisfied with basic products.\n消费者不再满足于基础产品。",
+    "analysis": "表示对某事物的满足感已经消失",
+    "imported_at": "2026-09-25 11:19:45"
   },
   {
-    "word": "rare sense of hope",
-    "phonetic": "/rɛər sɛns əv hoʊp/",
+    "word": "pursue safer, more nutritious and healthier food",
+    "phonetic": "/pərˈsuː ˈseɪfər, mɔːr nuːˈtrɪʃəs ənd ˈhelθiər fuːd/",
+    "part_of_speech": "verb phrase",
+    "translation": "追求更安全、更有营养和更健康的食物",
+    "example": "Many families now pursue safer, more nutritious and healthier food.\n如今许多家庭追求更安全、更有营养和更健康的食物。",
+    "analysis": "描述对食品质量提出更高要求的行为",
+    "imported_at": "2026-09-25 11:19:45"
+  },
+  {
+    "word": "become increasingly diverse and abundant",
+    "phonetic": "/bɪˈkʌm ɪnˈkriːsɪŋli daɪˈvɜːrs ənd əˈbʌndənt/",
+    "part_of_speech": "verb phrase",
+    "translation": "变得日益多样和丰富",
+    "example": "Entertainment options have become increasingly diverse and abundant.\n娱乐选择变得日益多样和丰富。",
+    "analysis": "表示事物在种类和数量上持续增长",
+    "imported_at": "2026-09-25 11:19:45"
+  },
+  {
+    "word": "be no longer limited to",
+    "phonetic": "/bi noʊ ˈlɒŋɡər ˈlɪmɪtɪd tuː/",
+    "part_of_speech": "verb phrase",
+    "translation": "不再局限于",
+    "example": "Our discussions are no longer limited to work topics.\n我们的讨论不再局限于工作话题。",
+    "analysis": "表示范围或限制已被突破",
+    "imported_at": "2026-09-25 11:19:45"
+  },
+  {
+    "word": "the development of the logistics industry",
+    "phonetic": "/ðə dɪˈveləpmənt əv ðə ləˈdʒɪstɪks ˈɪndəstri/",
     "part_of_speech": "noun phrase",
-    "translation": "难得的希望感",
-    "example": "The ceasefire brought a rare sense of hope to the war-torn region.\n停火协议给饱受战争蹂躏的地区带来了一丝难得的希望。",
-    "analysis": "形容在困难环境下极其罕见且宝贵的希望情绪。",
-    "imported_at": "2026-03-06 17:02:02"
+    "translation": "物流业的发展",
+    "example": "The development of the logistics industry has boosted e-commerce.\n物流业的发展促进了电子商务。",
+    "analysis": "指物流行业的进步与成长",
+    "imported_at": "2026-09-25 11:19:45"
   },
   {
-    "word": "internal unrest",
-    "phonetic": "/ɪnˈtɜːrnəl ʌnˈrɛst/",
-    "part_of_speech": "noun phrase",
-    "translation": "内部动荡",
-    "example": "The country is suffering from severe internal unrest.\n这个国家正遭受严重的内部动荡。",
-    "analysis": "指国家或组织内部的不稳定或骚乱状态。",
-    "imported_at": "2026-03-06 17:02:02"
+    "word": "make it easier for people to do sth",
+    "phonetic": "/meɪk ɪt ˈiːziər fɔːr ˈpiːpəl tuː duː ˈsʌmθɪŋ/",
+    "part_of_speech": "verb phrase",
+    "translation": "使人们更容易做某事",
+    "example": "Smartphones make it easier for people to stay connected.\n智能手机使人们更容易保持联系。",
+    "analysis": "表示降低某事的难度或障碍",
+    "imported_at": "2026-09-25 11:19:45"
   },
   {
-    "word": "announce",
-    "phonetic": "/əˈnaʊns/",
-    "part_of_speech": "verb",
-    "translation": "宣布；通告",
-    "example": "The company will announce its new strategy tomorrow.\n公司明天将宣布其新战略。",
-    "analysis": "正式公开地告知某事。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "departure",
-    "phonetic": "/dɪˈpɑːrtʃər/",
-    "part_of_speech": "noun",
-    "translation": "离开；出发",
-    "example": "We are preparing for our departure tomorrow morning.\n我们正在为明早的出发做准备。",
-    "analysis": "指从某地启程或离开的行为。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "banner headline",
-    "phonetic": "/ˈbænər ˈhɛdlaɪn/",
-    "part_of_speech": "noun phrase",
-    "translation": "通栏大标题",
-    "example": "The scandal appeared as a banner headline in all the newspapers.\n这起丑闻出现在所有报纸的通栏大标题上。",
-    "analysis": "指报纸头版横跨整个页面顶部的醒目大标题。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "iconic",
-    "phonetic": "/aɪˈkɑːnɪk/",
-    "part_of_speech": "adjective",
-    "translation": "标志性的；偶像级的",
-    "example": "The Eiffel Tower is an iconic symbol of Paris.\n埃菲尔铁塔是巴黎的标志性建筑。",
-    "analysis": "形容具有代表性、广为人知且地位崇高的事物。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "evoke",
-    "phonetic": "/ɪˈvoʊk/",
-    "part_of_speech": "verb",
-    "translation": "引起；唤起",
-    "example": "The song helped to evoke memories of his childhood.\n这首歌唤起了他童年的记忆。",
-    "analysis": "指通过某种方式使人想起或产生某种情感。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "magnitude",
-    "phonetic": "/ˈmæɡnɪtuːd/",
-    "part_of_speech": "noun",
-    "translation": "巨大程度；量级",
-    "example": "They did not realize the magnitude of the problem.\n他们没有意识到问题的严重性。",
-    "analysis": "指规模、程度或重要性的大小。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "culmination",
-    "phonetic": "/ˌkʌlmɪˈneɪʃn/",
-    "part_of_speech": "noun",
-    "translation": "顶点；高潮；终点",
-    "example": "The concert was the culmination of a year's hard work.\n这场音乐会是一年辛勤工作后的高潮。",
-    "analysis": "指某事发展到最高点或最终结果",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "unlikely",
-    "phonetic": "/ʌnˈlaɪkli/",
-    "part_of_speech": "adjective",
-    "translation": "不太可能的",
-    "example": "It is unlikely that it will rain today.\n今天不太可能会下雨。",
-    "analysis": "表示某事发生的概率很低。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "popular revolution",
-    "phonetic": "/ˈpɒpjʊlər ˌrevəˈluːʃən/",
-    "part_of_speech": "noun phrase",
-    "translation": "民众革命",
-    "example": "The country underwent a popular revolution to demand democratic reforms.\n这个国家经历了一场民众革命以要求民主改革。",
-    "analysis": "指由广大民众发起、旨在改变政权或社会制度的运动。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "topple",
-    "phonetic": "/ˈtɒpəl/",
-    "part_of_speech": "verb",
-    "translation": "推翻；倾倒",
-    "example": "The protesters sought to topple the corrupt government.\n抗议者试图推翻腐败的政府。",
-    "analysis": "原指使某物倒塌，引申为推翻政权或领导人。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "modernizing",
-    "phonetic": "/ˈmɒdənaɪzɪŋ/",
-    "part_of_speech": "verb/adjective",
-    "translation": "现代化的",
-    "example": "The government is focusing on modernizing the country's infrastructure.\n政府正致力于实现国家基础设施的现代化。",
-    "analysis": "指使某事物变得符合现代标准或采用新技术。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "monarch",
-    "phonetic": "/ˈmɒnək/",
-    "part_of_speech": "noun",
-    "translation": "君主；国王",
-    "example": "The monarch addressed the nation during the crisis.\n君主在危机期间向全国发表了讲话。",
-    "analysis": "指世袭的统治者，如国王、女王或皇帝。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "strategically",
-    "phonetic": "/strəˈtiːdʒɪkli/",
-    "part_of_speech": "adverb",
-    "translation": "战略性地",
-    "example": "The military base was strategically located near the border.\n该军事基地在战略上位于边境附近。",
-    "analysis": "指为了实现长远目标或军事目的而进行的部署。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "economically vital",
-    "phonetic": "/ˌiːkəˈnɒmɪkli ˈvaɪtəl/",
-    "part_of_speech": "adjective phrase",
-    "translation": "经济上至关重要的",
-    "example": "Tourism is economically vital to the island's survival.\n旅游业对该岛的生存至关重要。",
-    "analysis": "形容对经济发展具有决定性或不可或缺的作用。",
-    "imported_at": "2026-03-06 17:02:02"
-  },
-  {
-    "word": "pro-western",
-    "phonetic": "/ˌprəʊˈwestən/",
-    "part_of_speech": "adjective",
-    "translation": "亲西方的",
-    "example": "The new administration adopted a pro-western foreign policy.\n新政府采取了亲西方的外交政策。",
-    "analysis": "指在政治或文化上倾向于西方国家。",
-    "imported_at": "2026-03-06 17:02:02"
+    "word": "provide a strong guarantee for",
+    "phonetic": "/prəˈvaɪd ə strɒŋ ˌɡærənˈtiː fɔːr/",
+    "part_of_speech": "verb phrase",
+    "translation": "为...提供有力保障",
+    "example": "The new policy provides a strong guarantee for environmental protection.\n新政策为环境保护提供了有力保障。",
+    "analysis": "表示给予可靠的支持或保证",
+    "imported_at": "2026-09-25 11:19:45"
   }
 ]
