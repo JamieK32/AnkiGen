@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+from PySide6.QtCore import QLibraryInfo, QTranslator
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
@@ -42,6 +43,9 @@ def main() -> int:
 
     app = QApplication(sys.argv)
     app.setApplicationName("AnkiGen")
+    translator = QTranslator(app)
+    translator.load('qtbase_zh_CN', QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath))
+    app.installTranslator(translator)
     icon_path = app_icon_path(project_root)
     if icon_path is not None:
         icon = QIcon(str(icon_path))

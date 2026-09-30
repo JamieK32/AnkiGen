@@ -35,30 +35,29 @@ class WordEditor(QWidget):
         self.part_of_speech_edit = QLineEdit()
         self.translation_edit = QLineEdit()
         self.example_edit = QTextEdit()
-        self.example_edit.setPlaceholderText("Example sentence")
+        self.example_edit.setPlaceholderText("英文例句\n中文翻译")
         self.analysis_edit = QTextEdit()
-        self.analysis_edit.setPlaceholderText("Chinese analysis")
+        self.analysis_edit.setPlaceholderText("搭配含义、用法或记忆提示")
 
-        form.addRow("Word", self.word_edit)
-        form.addRow("Phonetic", self.phonetic_edit)
-        form.addRow("Part of Speech", self.part_of_speech_edit)
-        form.addRow("Translation", self.translation_edit)
-        form.addRow("Example", self.example_edit)
-        form.addRow("Analysis", self.analysis_edit)
-
-        for field in (
-            self.word_edit,
-            self.phonetic_edit,
-            self.part_of_speech_edit,
-            self.translation_edit,
-            self.example_edit,
-            self.analysis_edit,
-        ):
-            label = form.labelForField(field)
-            if label is not None:
-                label.setStyleSheet("QLabel { color: #9CA3AF; font-size: 12px; font-weight: 500; }")
-
+        self.setObjectName('Editor')
+        title = QLabel('搭配详情')
+        title.setObjectName('PageTitle')
+        layout.addWidget(title)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        form.addRow('英文搭配', self.word_edit)
+        form.addRow('中文释义 / 默写提示', self.translation_edit)
+        form.addRow('例句 · 第一行英文，第二行中文', self.example_edit)
+        form.addRow('搭配解析', self.analysis_edit)
+        self.example_edit.setFixedHeight(100)
+        self.analysis_edit.setFixedHeight(76)
         layout.addLayout(form)
+        auxiliary = QLabel('辅助信息（选填）')
+        auxiliary.setObjectName('Muted')
+        layout.addWidget(auxiliary)
+        extra = QFormLayout()
+        extra.addRow('音标', self.phonetic_edit)
+        extra.addRow('词性', self.part_of_speech_edit)
+        layout.addLayout(extra)
         self.source_button = QPushButton("查看来源原文")
         self.source_button.setCheckable(True)
         self.source_view = QTextEdit()
@@ -69,21 +68,21 @@ class WordEditor(QWidget):
         layout.addWidget(self.source_button)
         layout.addWidget(self.source_view)
 
-        self.word_audio_status = QLabel("Word audio: -")
-        self.sentence_audio_status = QLabel("Sentence audio: -")
-        layout.addWidget(self.word_audio_status)
-        layout.addWidget(self.sentence_audio_status)
+        self.word_audio_status = QLabel("搭配音频")
+        self.sentence_audio_status = QLabel("例句音频")
+        self.word_audio_status.hide()
+        self.sentence_audio_status.hide()
 
         play_layout = QHBoxLayout()
-        self.play_word_button = QPushButton("Play Word Audio")
-        self.play_sentence_button = QPushButton("Play Sentence Audio")
+        self.play_word_button = QPushButton("播放搭配")
+        self.play_sentence_button = QPushButton("播放例句")
         play_layout.addWidget(self.play_word_button)
         play_layout.addWidget(self.play_sentence_button)
         layout.addLayout(play_layout)
 
         action_layout = QHBoxLayout()
-        self.regenerate_audio_button = QPushButton("Regenerate Audio")
-        self.save_button = QPushButton("Save Changes")
+        self.regenerate_audio_button = QPushButton("重新生成音频")
+        self.save_button = QPushButton("保存修改")
         action_layout.addWidget(self.regenerate_audio_button)
         action_layout.addWidget(self.save_button)
         layout.addLayout(action_layout)
@@ -130,8 +129,14 @@ class WordEditor(QWidget):
         }
 
     def set_audio_status(self, word_exists: bool, sentence_exists: bool) -> None:
-        self.word_audio_status.setText(f"Word audio: {'Exists' if word_exists else 'Missing'}")
-        self.sentence_audio_status.setText(f"Sentence audio: {'Exists' if sentence_exists else 'Missing'}")
+        self.word_audio_status.setText('搭配音频：' + ('已生成' if word_exists else '缺失'))
+        self.sentence_audio_status.setText('例句音频：' + ('已生成' if sentence_exists else '缺失'))
+        self.play_word_button.setText('▶ 播放搭配' if word_exists else '搭配音频缺失')
+        self.play_sentence_button.setText('▶ 播放例句' if sentence_exists else '例句音频缺失')
+        self._word_audio_exists = word_exists
+        self._sentence_audio_exists = sentence_exists
+        self.play_word_button.setEnabled(word_exists)
+        self.play_sentence_button.setEnabled(sentence_exists)
 
     def set_actions_enabled(self, enabled: bool) -> None:
         for widget in (
@@ -160,8 +165,8 @@ class WordEditor(QWidget):
             self.save_button,
         ):
             widget.setEnabled(can_edit)
-        self.play_word_button.setEnabled(can_play_audio)
-        self.play_sentence_button.setEnabled(can_play_audio)
+        self.play_word_button.setEnabled(can_play_audio and getattr(self, "_word_audio_exists", False))
+        self.play_sentence_button.setEnabled(can_play_audio and getattr(self, "_sentence_audio_exists", False))
 
     def _emit_save(self) -> None:
         self.save_requested.emit(self.get_word_data())

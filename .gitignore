@@ -28,6 +28,7 @@ release/
 # Local backups, exports, Anki packages and runtime logs
 /backups/
 /exports/
+/.restore-*/
 *.apkg
 *.colpkg
 *.anki2

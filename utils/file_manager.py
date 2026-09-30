@@ -80,6 +80,18 @@ def save_words(json_path: Path, words: list[dict[str, str]]) -> None:
     temporary = json_path.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(words, ensure_ascii=False, indent=2), encoding="utf-8")
     temporary.replace(json_path)
+    if json_path.name == 'words.json':
+        update_english_library(json_path, words)
+
+
+def update_english_library(json_path: Path, words: list[dict[str, str]]) -> Path:
+    output = json_path.parent.parent / 'exports' / 'vocabulary-english.txt'
+    output.parent.mkdir(parents=True, exist_ok=True)
+    entries = list(dict.fromkeys(item['word'].strip() for item in words if item.get('word', '').strip()))
+    temporary = output.with_suffix('.txt.tmp')
+    temporary.write_text(''.join(word + '\n' for word in entries), encoding='utf-8')
+    temporary.replace(output)
+    return output
 
 
 def parse_import_text(text: str, mode: str = "comma") -> list[str]:

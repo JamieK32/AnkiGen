@@ -1,10 +1,8 @@
-import json
-
 from PySide6.QtWidgets import QDialog, QMessageBox
 
-from gui.workflow_dialogs import ArticleDialog, ImportDialog, SyncPreviewDialog
+from gui.workflow_dialogs import ImportDialog
 from services.gpt_generator import GPTGenerator
-from services.vocabulary_workflow import extract_collocations, generate_entries, sync_preview
+from services.vocabulary_workflow import generate_entries
 from utils.file_manager import repair_word_data, save_words
 
 
@@ -28,41 +26,6 @@ class WorkflowActions:
         save_words(self.words_json_path, self.words)
         self._refresh_word_list(select_word=new[0]['word'])
         self._run_generation(new)
-
-    def _open_article(self):
-        if not self._confirm_unsaved():
-            return
-        if not self.gpt_generator:
-            self._show_error('请先在 Settings 配置 API Key。')
-            return
-        path = self.data_dir / 'articles.json'
-        try:
-            articles = json.loads(path.read_text(encoding='utf-8')) if path.exists() else []
-        except (ValueError, OSError):
-            self._show_error('文章历史无法读取，请检查 data/articles.json。')
-            return
-        dialog = ArticleDialog(articles, self)
-        if dialog.exec() != QDialog.DialogCode.Accepted:
-            return
-        text = dialog.text.toPlainText().strip()
-        if not any(row['text'] == text for row in articles):
-            articles.append({'text': text, 'imported_at': self._now_timestamp()})
-            save_words(path, articles)
-        generator = self.gpt_generator
-
-        def task(progress, log):
-            log('正在提取文章搭配…')
-            rows = extract_collocations(generator, text)
-            progress(100)
-            return rows
-
-        def finished(rows):
-            self.progress_label.setText(f'提取完成：{len(rows)} 条候选')
-            selection = ImportDialog([x['word'] for x in self.words], self, candidates=rows)
-            if selection.exec() == QDialog.DialogCode.Accepted:
-                self._import_entries(selection.selected_entries())
-
-        self._start_task('提取文章搭配…', task, finished, allow_browse_audio=True)
 
     def _run_generation(self, entries, mode='complete'):
         if not entries or self._task_busy:
@@ -105,7 +68,8 @@ class WorkflowActions:
 
     def _retry_failed(self):
         if self._confirm_unsaved():
-            failed = [x for x in self.words if x.get('generation_error')]
+            selected = set(self._selected_words())
+            failed = [x for x in self.words if x['word'] in selected and x.get('generation_error')]
             if not failed:
                 self.statusBar().showMessage('没有失败条目。', 4000)
             else:
@@ -123,33 +87,7 @@ class WorkflowActions:
                 return False
 
         self._start_task('检测 Anki 连接…', task, lambda ok: self.anki_status.setText(
-            'Anki：已连接' if ok else 'Anki：未连接'))
-
-    def _preview_sync(self):
-        if not self._confirm_unsaved():
-            return
-        snapshot = [dict(x) for x in self.words]
-        self.anki_status.setText('Anki：检测中…')
-
-        def task(progress, log):
-            try:
-                self.anki_api.check_connection()
-                remote = self.anki_api.get_deck_word_to_note_ids(self.deck_name)
-                return {'remote': remote, 'plan': sync_preview(snapshot, remote, self.audio_dir)}
-            except Exception as exc:
-                return {'error': str(exc)}
-
-        def finished(result):
-            if 'error' in result:
-                self.anki_status.setText('Anki：未连接')
-                self._show_error(result['error'])
-                return
-            self.anki_status.setText('Anki：已连接')
-            dialog = SyncPreviewDialog(result['plan'], self.deck_name, self)
-            if dialog.exec() == QDialog.DialogCode.Accepted:
-                self._on_sync_to_anki_clicked(result['remote'])
-
-        self._start_task('读取 Anki 同步预览…', task, finished, allow_browse_audio=True)
+            'Anki：已连接' if ok else 'Anki：未连接'), allow_browse_audio=True)
 
     def _confirm_unsaved(self):
         if not getattr(self, '_editor_baseline', None) or self.editor.get_word_data() == self._editor_baseline:
@@ -171,7 +109,11 @@ class WorkflowActions:
 
     def _update_dirty_indicator(self):
         dirty = bool(getattr(self, '_editor_baseline', None)) and self.editor.get_word_data() != self._editor_baseline
-        self.editor.save_button.setText('保存修改 *' if dirty else '保存修改')
+        self.editor.save_button.setText('保存修改 *' if dirty else '已保存')
+        self.editor.save_button.setEnabled(dirty and not self._task_busy)
+        self.editor.save_button.setObjectName('PrimaryAction' if dirty else '')
+        self.editor.save_button.style().unpolish(self.editor.save_button)
+        self.editor.save_button.style().polish(self.editor.save_button)
 
     def closeEvent(self, event):
         if self._task_busy or any(worker.isRunning() for worker in self._workers):
@@ -180,4 +122,5 @@ class WorkflowActions:
         elif not self._confirm_unsaved():
             event.ignore()
         else:
+            self._save_ui_state()
             event.accept()

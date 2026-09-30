@@ -3,3 +3,4 @@ openai>=1.40.0
 edge-tts>=6.1.12
 requests>=2.31.0
 python-dotenv>=1.0.1
+openpyxl>=3.1.5

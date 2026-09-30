@@ -54,6 +54,7 @@ def extract_collocations(generator, article):
 def generate_entries(entries, generator_factory, tts, audio_dir, batch_size, mode, progress, log):
     """Work on snapshots only; UI persists the returned successes and failures."""
     items = [dict(item, generation_error='') for item in entries]
+    log(f'阶段：准备处理 {len(items)} 条搭配')
     for item in items:
         item['generation_mode'] = item.get('generation_mode', 'complete') if mode == 'retry' else mode
     if mode in {'complete', 'retry'}:
@@ -62,11 +63,12 @@ def generate_entries(entries, generator_factory, tts, audio_dir, batch_size, mod
             if item['generation_mode'] == 'complete' and needs_metadata(item):
                 groups[item.get('source_text', '')].append(item)
         for source, group in groups.items():
+            log(f'阶段：正在生成释义和例句 · 本组 {len(group)} 条')
             generator = None
             try:
                 generator = generator_factory(source)
                 if generator is None:
-                    raise ValueError('请先在 Settings 配置 API Key。')
+                    raise ValueError('请先在设置中配置 API 密钥。')
                 result = generator.generate_words_batch(
                     [item['word'] for item in group], batch_size=batch_size, log_callback=log,
                 )
@@ -74,7 +76,7 @@ def generate_entries(entries, generator_factory, tts, audio_dir, batch_size, mod
                 for item in group:
                     data = generated.get(item['word'])
                     if data is None:
-                        item['generation_error'] = 'AI 未生成此搭配；可点击仅重试失败项。'
+                        item['generation_error'] = 'AI 未生成此搭配；可选中后点击重试失败。'
                         continue
                     for field in CONTENT_FIELDS:
                         if not item.get(field, '').strip():
@@ -88,13 +90,14 @@ def generate_entries(entries, generator_factory, tts, audio_dir, batch_size, mod
                 if generator is not None:
                     generator.client.close()
     progress(50)
+    log(f'阶段：正在生成音频 · 已处理 0 / {len(items)} 条')
 
     def audio(item):
         if item['generation_error']:
             return item
         try:
             if not item.get('example', '').strip():
-                raise ValueError('缺少例句，请先补全当前搭配。')
+                raise ValueError('缺少例句，请先选中词条并点击补全所选。')
             has_word, has_sentence = check_audio_exists(audio_dir, item['word'])
             tts.generate_for_entry(
                 item, audio_dir, generate_word=item['generation_mode'] == 'audio_all' or not has_word,
@@ -109,6 +112,7 @@ def generate_entries(entries, generator_factory, tts, audio_dir, batch_size, mod
         for done, future in enumerate(as_completed(futures), 1):
             item = future.result()
             log(f"{item['word']}: {item['generation_error'] or '完成'}")
+            log(f'阶段：正在生成音频 · 已处理 {done} / {len(items)} 条')
             progress(50 + int(done * 50 / max(1, len(items))))
     return items
 

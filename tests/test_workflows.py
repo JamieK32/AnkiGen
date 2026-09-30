@@ -102,6 +102,11 @@ class WorkflowUITests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = QApplication.instance() or QApplication([])
+        # The offscreen Windows plugin does not discover system fonts itself.
+        if os.name == 'nt':
+            from PySide6.QtGui import QFontDatabase
+            for name in ('msyh.ttc', 'msyhbd.ttc', 'segoeui.ttf'):
+                QFontDatabase.addApplicationFont(str(Path(os.environ['WINDIR'])/'Fonts'/name))
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -115,6 +120,7 @@ class WorkflowUITests(unittest.TestCase):
     def tearDown(self):
         self.window._editor_baseline = None
         self.window.close()
+        self.window._ui_settings().clear()
         self.app.processEvents()
         self.temp.cleanup()
 
@@ -122,7 +128,7 @@ class WorkflowUITests(unittest.TestCase):
         self.window.editor.translation_edit.setText('修改后的释义')
         self.assertIn('*', self.window.editor.save_button.text())
         with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.Save):
-            self.window.word_list.setCurrentRow(1)
+            self.window.word_list.selectRow(1)
         items = {x['word']: x for x in load_words(self.root/'data/words.json')}
         self.assertEqual(items['first']['translation'], '修改后的释义')
         self.assertEqual(items['first']['source_text'], '原文')
@@ -131,7 +137,7 @@ class WorkflowUITests(unittest.TestCase):
     def test_cancel_selection_keeps_edits_and_selection(self):
         self.window.editor.translation_edit.setText('未保存')
         with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.Cancel):
-            self.window.word_list.setCurrentRow(1)
+            self.window.word_list.selectRow(1)
         self.assertEqual(self.window._current_selected_word(), 'first')
         self.assertEqual(self.window.editor.translation_edit.text(), '未保存')
 
@@ -156,14 +162,27 @@ class WorkflowUITests(unittest.TestCase):
         self.assertEqual([x['word'] for x in run.call_args.args[0]], ['first'])
         self.assertEqual(run.call_args.args[1], 'retry')
 
+    def test_library_file_import_does_not_trigger_ai(self):
+        path = self.root/'incoming.txt'
+        path.write_text('safer, healthier food\n', encoding='utf-8')
+        def immediate(status, fn, on_success, **kwargs):
+            on_success(fn(Mock(), Mock()))
+        with patch('gui.library_actions.QFileDialog.getOpenFileName', return_value=(str(path), '')), \
+             patch('gui.library_actions.ImportDialog.exec', return_value=QDialog.DialogCode.Accepted), \
+             patch.object(self.window, '_start_task', side_effect=immediate), \
+             patch.object(self.window, '_run_generation') as generate:
+            self.window._import_library_file()
+        self.assertIn('safer, healthier food', [x['word'] for x in self.window.words])
+        generate.assert_not_called()
+        self.assertIn('safer, healthier food', (self.root/'exports/vocabulary-english.txt').read_text(encoding='utf-8'))
+
     def test_preview_cancel_does_not_write_to_anki(self):
         api = Mock()
         api.get_deck_word_to_note_ids.return_value = {'old': [1]}
         self.window.anki_api = api
         def immediate(status, fn, on_success, **kwargs):
             on_success(fn(Mock(), Mock()))
-        with patch.object(self.window, '_start_task', side_effect=immediate), \
-             patch('gui.workflow_actions.SyncPreviewDialog.exec', return_value=QDialog.DialogCode.Rejected):
+        with patch.object(self.window, '_start_task', side_effect=immediate):
             self.window._preview_sync()
         api.ensure_deck.assert_not_called()
         api.delete_notes.assert_not_called()
@@ -224,6 +243,123 @@ class WorkflowUITests(unittest.TestCase):
         self.assertEqual(result['words'][0]['source_text'], '原文')
         self.assertFalse(self.window.gpt_generator.mock_calls)
         self.assertFalse(self.window.tts_generator.mock_calls)
+
+    def test_filter_clears_selection_and_select_all_targets_visible_only(self):
+        self.window.word_list.selectAll()
+        self.assertEqual(set(self.window._selected_words()), {'first', 'second'})
+        self.window.search_input.setText('SECOND')
+        self.assertEqual(self.window._selected_words(), [])
+        self.window.word_list.selectAll()
+        with patch.object(self.window, '_run_generation') as run:
+            self.window._generate_selected()
+        self.assertEqual([x['word'] for x in run.call_args.args[0]], ['second'])
+        self.window.search_input.setText('测试')
+        self.assertEqual(self.window.word_proxy.rowCount(), 2)
+        self.assertEqual(self.window._selected_words(), [])
+
+    def test_status_filter_and_failed_retry_respect_selection(self):
+        for row in self.window.words:
+            row['generation_error'] = 'timeout'
+        self.window._refresh_word_list()
+        with patch.object(self.window, '_run_generation') as run:
+            self.window._retry_failed()
+        self.assertEqual([x['word'] for x in run.call_args.args[0]], ['first'])
+        self.window.status_filter.setCurrentText('已完成')
+        self.assertEqual(self.window.word_proxy.rowCount(), 0)
+        self.assertFalse(self.window.generate_all_button.isEnabled())
+        self.window.status_filter.setCurrentText('失败')
+        self.assertEqual(self.window.word_proxy.rowCount(), 2)
+
+    def test_cancel_filter_and_navigation_preserves_draft(self):
+        self.window.editor.translation_edit.setText('未保存')
+        with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.Cancel):
+            self.window.search_input.setText('second')
+            self.window.navigation.setCurrentRow(1)
+        self.assertEqual(self.window.search_input.text(), '')
+        self.assertEqual(self.window.pages.currentIndex(), 0)
+        self.assertEqual(self.window.navigation.currentRow(), 0)
+        self.assertEqual(self.window.editor.translation_edit.text(), '未保存')
+
+    def test_failed_save_retains_input_baseline_and_disk(self):
+        before = load_words(self.root/'data/words.json')
+        self.window.editor.translation_edit.setText('未写入磁盘')
+        with patch('gui.main_window.save_words', side_effect=OSError('disk full')):
+            saved = self.window._on_save_word_clicked(self.window.editor.get_word_data())
+        self.assertFalse(saved)
+        self.assertEqual(self.window.editor.translation_edit.text(), '未写入磁盘')
+        self.assertTrue(self.window.editor.save_button.isEnabled())
+        self.assertEqual(load_words(self.root/'data/words.json'), before)
+        self.assertEqual(self.window.words[0]['translation'], '测试')
+
+    def test_inline_sync_preview_invalidates_after_save_and_external_media_change(self):
+        api = Mock()
+        api.get_deck_word_to_note_ids.return_value = {}
+        self.window.anki_api = api
+        def immediate(status, fn, success, **kwargs):
+            success(fn(Mock(), Mock()))
+        with patch.object(self.window, '_start_task', side_effect=immediate):
+            self.window._preview_sync()
+            self.assertTrue(self.window.sync_confirm.isEnabled())
+            self.window.editor.translation_edit.setText('新释义')
+            self.window._on_save_word_clicked(self.window.editor.get_word_data())
+            self.assertFalse(self.window.sync_confirm.isEnabled())
+            self.window._preview_sync()
+        word_audio_path(self.window.audio_dir, 'first').write_bytes(b'new audio')
+        with patch.object(self.window, '_on_sync_to_anki_clicked') as sync:
+            self.window._execute_preview()
+        sync.assert_not_called()
+        self.assertFalse(self.window.sync_confirm.isEnabled())
+
+    def test_sync_delete_requires_confirmation(self):
+        api = Mock()
+        api.get_deck_word_to_note_ids.return_value = {'obsolete': [4]}
+        self.window.anki_api = api
+        with patch.object(self.window, '_start_task', side_effect=lambda s, fn, done, **kw: done(fn(Mock(), Mock()))):
+            self.window._preview_sync()
+        with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.No), \
+             patch.object(self.window, '_on_sync_to_anki_clicked') as sync:
+            self.window._execute_preview()
+        sync.assert_not_called()
+        self.assertTrue(self.window.sync_confirm.isEnabled())
+
+    def test_article_extraction_persists_candidates_across_navigation(self):
+        self.window.gpt_generator = Mock()
+        self.window.article_text.setPlainText('文章原文')
+        with patch('gui.workspace.extract_collocations', return_value=[{'word': 'new phrase', 'translation': '新搭配'}]), \
+             patch.object(self.window, '_start_task', side_effect=lambda s, fn, done, **kw: done(fn(Mock(), Mock()))):
+            self.window._extract_article()
+        self.window.navigation.setCurrentRow(1)
+        self.window.navigation.setCurrentRow(0)
+        self.window.navigation.setCurrentRow(1)
+        self.assertEqual(self.window.article_text.toPlainText(), '文章原文')
+        self.assertEqual(self.window._chosen_candidates()[0]['source_text'], '文章原文')
+        with patch.object(self.window, '_run_generation'):
+            self.window._import_article_candidates()
+        self.assertEqual(self.window._find_word('new phrase')['source_text'], '文章原文')
+        self.assertFalse(self.window.article_import.isEnabled())
+
+    def test_background_task_allows_navigation_and_audio_but_not_mutation(self):
+        word_audio_path(self.window.audio_dir, 'first').write_bytes(b'audio')
+        self.window._update_audio_status('first')
+        self.window._set_busy(True, '生成中', allow_browse_audio=True)
+        self.window.navigation.setCurrentRow(1)
+        self.assertEqual(self.window.pages.currentIndex(), 1)
+        self.assertTrue(self.window.word_list.isEnabled())
+        self.assertTrue(self.window.editor.play_word_button.isEnabled())
+        self.assertFalse(self.window.generate_all_button.isEnabled())
+        self.assertFalse(self.window.backup_button.isEnabled())
+        self.assertFalse(self.window.article_import.isEnabled())
+        self.window._set_busy(False, '完成')
+
+    def test_small_window_pages_and_log_default(self):
+        self.window.resize(1200, 720)
+        self.app.processEvents()
+        self.assertTrue(self.window.log_widget.isHidden())
+        for index in range(4):
+            self.window.navigation.setCurrentRow(index)
+            self.app.processEvents()
+            self.assertLessEqual(self.window.minimumSizeHint().width(), 1200)
+            self.assertLessEqual(self.window.minimumSizeHint().height(), 720)
 
 
 if __name__ == '__main__':
